@@ -1,0 +1,15 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Импорт файла{% endblock %}
+{% block content %}
+        <p>Выберите источник данных для импорта</p>
+            <form action="{% url 'main:import_data' choice object_id %}" method="post" enctype="multipart/form-data">
+                <div>
+                    {{ form.as_p }}
+                    {% csrf_token %}
+                </div>
+                <div class="account-button">
+                    <input type="submit" value="Импортировать данные">
+                </div>
+            </form>
+        <p>{{ msg }}</p>
+{% endblock %}

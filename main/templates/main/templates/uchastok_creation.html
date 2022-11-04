@@ -1,0 +1,16 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Создание объекта{% endblock %}
+{% block content %}
+        <p>Для создания объекта заполните представленную форму:</p>
+            <form action="{% url 'main:create_uchastok' %}" method="post">
+                <div>
+                    {{ form1.as_p }}
+                    {{ form2.as_p }}
+                    {% csrf_token %}
+                </div>
+                <div class="account-button">
+                    <input type="submit" value="Создать">
+                </div>
+            </form>
+        <p>{{ msg }}</p>
+{% endblock %}

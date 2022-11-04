@@ -1,0 +1,18 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Изменение данных{% endblock %}
+{% block content %}
+        <p>На данной странице вы можете редактировать данные для {{ obj }}:</p>
+            <form action="{% url 'main:change_rrl' pk %}" method="post">Введите данные которые вы хотите изменить:
+
+                <div>
+                    {{ form.as_p }}
+                    {% csrf_token %}
+                    <button type="submit" class="btn third">Изменить</button>
+                </div>
+            </form>
+        <p>{{ msg }}</p>
+        <p>Текущее значение</p>
+        <p>{{ obj.rrl_line_name }}</p>
+        <p>{{ obj.get_station_count_field }}</p>
+        <p>{{ obj.get_bandwidth_field }}</p>
+{% endblock %}

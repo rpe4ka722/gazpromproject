@@ -1,0 +1,46 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Список объектов{% endblock %}
+{% block content %}
+    <div class="button-bar">
+        <span>
+            <form action="{% url 'main:create_rrl' %}">
+                <button type="submit" value="Создать">Создать запись</button>
+            </form>
+        </span>
+    </div>
+    <div class="content">
+        <div class="table">
+        <table>
+            <tr class="head_row">
+                <th>Наименование линии</th>
+                <th>Количество станций</th>
+                <th>Полоса пропускания</th>
+                <th></th>
+                <th></th>
+            </tr>
+            {% if objectlist %}
+                {% for i in objectlist %}
+                    <tr class="table_row">
+                        <td>{{ i.rrl_line_name }}</td>
+                        <td>{{ i.get_station_count_field }}</td>
+                        <td>{{ i.get_bandwidth_field }}</td>
+                        <td align="center">
+                            <form action="{% url 'main:change_rrl' i.pk %}">
+                                <button>Изменить</button>
+                            </form>
+                        </td>
+                        <td align="center">
+                            <form method="post" action="{% url 'main:delete_rrl' i.pk %}">
+                                {% csrf_token %}
+                                <button type="submit">Удалить</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <p>No polls are available.</p>
+            {% endif %}
+        </table>
+        </div>
+    </div>
+{% endblock %}

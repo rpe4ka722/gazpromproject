@@ -1,0 +1,17 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Регистрация{% endblock %}
+{% block content %}
+    <div id="forms">
+        <p>Для регистрации нового пользователя заполните представленную форму:</p>
+            <form action="{% url 'account:registration' %}" method="post">
+                <div>
+                    {{ form.as_p }}
+                    {% csrf_token %}
+                </div>
+                <div class="account-button">
+                    <input type="submit" value="Регистрация">
+                </div>
+            </form>
+        <p>{{ msg }}</p>
+    </div>
+{% endblock %}

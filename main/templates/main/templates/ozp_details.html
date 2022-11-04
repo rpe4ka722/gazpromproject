@@ -1,0 +1,159 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Детали замечания{% endblock %}
+{% block content %}
+    <div class="button-bar">
+        <span>
+            <form action="{% url 'main:ozp' %}">
+                <button type="submit" value="К списку">К списку</button>
+            </form>
+        </span>
+    </div>
+    <div class="content">
+        <div class="table">
+        <table>
+            <tr>
+                <td>Объект</td>
+                <td colspan="2">
+                    <a href="{{ i.object_name.get_absolute_url }}">
+                        {{ i.object_name.object_name }}
+                    </a>
+                </td>
+            </tr>
+            <tr>
+                <td>Содержание замечания</td>
+                <td>{{ i.zamechanie_ozp }}</td>
+                <td align="center" width="55">
+                    <form method="post" action="{% url 'main:ozp_zamechanie_change' i.id %}" id="text_zamechanya" >
+                        {% csrf_token %}
+                        <textarea rows="5" cols="50" name="text_zamechanya" id="text_zamechanya" maxlength="500">
+                        </textarea>
+                        <br>
+                        <input type="submit" value="Изменить">
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <td>Нормативная документация</td>
+                <td>{{ i.normative_documentation }}</td>
+                <td align="center" width="55">
+                    <form method="post" action="{% url 'main:ozp_normative_change' i.id %}" onload="ClearForm()">
+                        {% csrf_token %}
+                        <textarea rows="5" cols="50" name="text_normative" id="text_normative" maxlength="500">
+                        </textarea>
+                        <input type="submit" value="Изменить">
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <td>Срок устранения</td>
+                <td>
+                    {% if i.zakrytie_date %}
+                        {{ i.zakrytie_date }}
+                    {% else %}
+                        Срок не установлен
+                    {% endif %}
+                    </td>
+                <td>
+                    <form method="post" action="{% url 'main:srok_ustranenia_change' i.id %}">
+                        {% csrf_token %}
+                        <input type="date" name="srok" id="srok" maxlength="500">
+                        <input type="submit" value="Изменить">
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <td>Контрольный срок</td>
+                <td>
+                    {% if i.control_date %}
+                    {{ i.control_date }}
+                    {% else %}
+                    Срок не установлен
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="post" action="{% url 'main:control_srok_change' i.id %}">
+                        {% csrf_token %}
+                        <input type="date" name="srok" id="srok" maxlength="500">
+                        <input type="submit" value="Изменить">
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <td>Фотография замечания</td>
+                <td>
+                    {% if foto_do %}
+                        {% for f in foto_do %}
+                            <br>
+                            <div class="foto_ozp">
+                            <a href="{{ f.foto.url }}" target="_blank">
+                                <img src="{{ f.foto.url }}" height="200">
+                            </a>
+                            <form action="{% url 'main:foto_do_delete' f.id %}">
+                                <button type="submit" value="Удалить">Удалить</button>
+                            </form>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>Фото отсутствует</p>
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="post" action="{% url 'main:foto_zamechanie_add' i.id %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="file" name="foto" id="foto">
+                        <br>
+                        <br>
+                        <input type="submit" value="Загрузить">
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <td>Фотография утранения замечания</td>
+                <td>
+                    {% if posle_foto %}
+                        {% for f in posle_foto %}
+                            <br>
+                            <div class="foto_ozp">
+                            <a href="{{ f.foto.url }}" target="_blank">
+                                <img src="{{ f.foto.url }}" height="200">
+                            </a>
+                            <form action="{% url 'main:posle_foto_delete' f.id %}">
+                                <button type="submit" value="Удалить">Удалить</button>
+                            </form>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>Фото отсутствует</p>
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="post" action="{% url 'main:foto_vipolnenie_add' i.id %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="file" name="foto" id="foto">
+                        <br>
+                        <br>
+                        <input type="submit" value="Загрузить">
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <td>Статус</td>
+                <td align="center">
+                    {% if i.is_done == 0 %}
+                        <img src="/static/main/img/free-png.ru-388.png" height="20" width="20">
+                        <br>В работе
+                    {% else %}
+                        <img src="/static/main/img/free-png.ru-39.png" height="20" width="20">
+                        <br>Выполнено
+                    {% endif %}
+                </td>
+                <td>
+                    <form action="{% url 'main:accept' i.id %}">
+                        <button type="submit" value="Выполнение">Подтвердить выполнение</button>
+                    </form>
+                </td>
+            </tr>
+        </table>
+        </div>
+    </div>
+{% endblock %}

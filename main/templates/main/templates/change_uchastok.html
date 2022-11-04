@@ -1,0 +1,15 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Изменение данных{% endblock %}
+{% block content %}
+        <p>На данной странице вы можете редактировать данные для {{ uch }}:</p>
+            <form action="{% url 'main:change_uchastok' pk %}" method="post">Введите имя и фамилию которые вы хотите указать:
+
+                <div>
+                    {{ form.as_p }}
+                    {% csrf_token %}
+                    <button type="submit" class="btn third">Изменить</button>
+                </div>
+            </form>
+        <p>{{ msg }}</p>
+        <p>Текущее значение {{ name }}</p>
+{% endblock %}

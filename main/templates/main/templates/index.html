@@ -1,0 +1,28 @@
+{% extends "main/templates/layout.html" %}
+{% block content %}
+            <div class="button">
+                <a href="#" id="rich">
+                <span class="button-text">РИЧ</span>
+                </a>
+            </div>
+            <div class="button">
+                <a href="{% url 'ams:ams' %}" id="ams">
+                <span class="button-text">АМС</span>
+                </a>
+            </div>
+            <div class="button" >
+                <a href="#" id="equip">
+                <span class="button-text">Оборудование</span>
+                </a>
+            </div>
+            <div class="button" >
+                <a href="{% url 'main:object_index' %}" id="objects">
+                <span class="button-text">Объекты УС</span>
+                </a>
+            </div>
+            <div class="button" >
+                <a href="{% url 'main:ozp' %}" id="ozp">
+                <span class="button-text">ОЗП</span>
+                </a>
+            </div>
+{% endblock %}

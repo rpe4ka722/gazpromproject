@@ -1,0 +1,18 @@
+{% extends "main/templates/layout.html" %}
+{% block content %}
+            <div class="button">
+                <a href="{% url 'main:objects' %}" id="link2">
+                <span class="button-text">Объекты</span>
+                </a>
+            </div>
+            <div class="button">
+                <a href="{% url 'main:rrl_line' %}" id="line">
+                <span class="button-text">Магистральные линии связи</span>
+                </a>
+            </div>
+            <div class="button" >
+                <a href="{% url 'main:structure' %}" id="US">
+                <span class="button-text">Структура УС</span>
+                </a>
+            </div>
+{% endblock %}

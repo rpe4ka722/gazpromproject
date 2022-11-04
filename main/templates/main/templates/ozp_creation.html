@@ -1,0 +1,28 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Создание замечания{% endblock %}
+{% block content %}
+        <p>Для создания замечания заполните представленную форму:</p>
+            <form action="{% url 'main:ozp_create' %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <label for="associated_object">Выберите объект на котором выявлено замечание:</label>
+                <select name="associated_object" id="associated_object" required>
+                    {% for i in objects %}
+                        <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                </select>
+                <p>
+                <label for="zamechanie_ozp">Введите содержание замечания:</label>
+                <input type="text" name="zamechanie_ozp" id="zamechanie_ozp" required maxlength="500">
+                <p>
+                <label for="normative_documentation">Нормативная документация:</label>
+                <input type="text" name="normative_documentation" id="normative_documentation" maxlength="100">
+                <p>
+                <label for="foto_do">Выберите фото замечания:</label>
+                <input type="file" name="foto_do" id="foto_do" required>
+                <p>
+                <div class="account-button">
+                    <input type="submit" value="Создать">
+                </div>
+            </form>
+        <p>{{ msg }}</p>
+{% endblock %}

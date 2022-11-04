@@ -1,0 +1,57 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Список объектов{% endblock %}
+{% block content %}
+    <div class="button-bar">
+        <span>
+            <form action="{% url 'main:ozp_create' %}">
+                <button type="submit" value="Создать">Создать запись</button>
+            </form>
+        </span>
+    </div>
+    <div class="content">
+        <div class="table">
+            <table>
+                <tr class="head_row">
+                    <th>К замечанию</th>
+                    <th>Объект</th>
+                    <th>Содержание замечания</th>
+                    <th>Нормативная документация</th>
+                    <th>Фото замечания</th>
+                    <th>Контрольная дата</th>
+                    <th>Дата устранения</th>
+                    <th>Выполнение</th>
+                </tr>
+                {% if objectlist %}
+                    {% for i in objectlist %}
+                        <tr class="table_row">
+                            <td align="center">
+                                <a href="{{ i.get_absolute_url }}" class="ozp-link">
+                                <img src="static/main/img/strelka.png" height="50" width="50">
+                                </a>
+                            </td>
+                            <td>{{ i.object_name.object_name }}</td>
+                            <td>{{ i.zamechanie_ozp }}</td>
+                            <td>{{ i.normative_documentation }}</td>
+                            <td>
+                                <a href="{{ i.do_foto.url }}" target="_blank">
+                                    <img src="{{ i.do_foto.url }}" height="100">
+                                </a>
+                            </td>
+                            <td>{{ i.control_date }}</td>
+                            <td>{{ i.zakrytie_date }}</td>
+                            <td align="center">
+                                {% if i.is_done == 0 %}
+                                    <img src="static/main/img/free-png.ru-388.png" height="20" width="20">
+                                {% else %}
+                                    <img src="static/main/img/free-png.ru-39.png" height="20" width="20">
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <p>Замечания отсутствуют</p>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+{% endblock %}

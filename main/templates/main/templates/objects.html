@@ -1,0 +1,92 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Список объектов{% endblock %}
+{% block content %}
+    <div class="button-bar">
+        <span>
+            <form action="{% url 'main:create_object' %}">
+                <button type="submit" value="Создать">Создать объект</button>
+            </form>
+        </span>
+        <span>
+            <form action="{% url 'main:export_objects'  %}">
+                <button type="submit" value="Создать">Выгрузить</button>
+            </form>
+        </span>
+        <div id="filter-button">
+            <span>
+                {% if filtered_by == 'all' %} Фильтрация отсутствует.
+                {% else %} Объекты отфильтрованы по: {{ filtered_by }}</span>
+                {% endif %}
+            <button type="submit" form="filter_reset" value="Сбросить" >Сбросить</button>
+            <input type="button" value="Фильтр" onmousedown="showhide('filter')" id="filter-button-dynamic">
+            <form id="filter_reset">
+                <a href={% url 'main:structure' %}>
+                </a>
+            </form>
+        </div>
+    </div>
+    <div id="filter">
+        <div class="filter-content">
+            <form id="filter_form" method="get" action={% url 'main:structure' %}>
+                <span>Фильтровать по цеху:</span>
+                <p>
+                    <select name="ceh" form="filter_form">
+                             {% for i in ceh %}
+                                <option value="{{ i }}">{{ i }}</option>
+                             {% endfor %}
+                    </select>
+                </p>
+            </form>
+        </div>
+        <div id="filter-button-bar">
+            <button type="submit" form="filter_form" value="Применить">Применить</button>
+        </div>
+    </div>
+    <div class="content">
+        <div class="table">
+            <table>
+               <tr>
+                    <th>Наименование станции</th>
+                    <th>Цех</th>
+                    <th>Участок</th>
+                    <th>Координаты<br>С.Ш.<br>В.Д.</th>
+                    <th>Адрес</th>
+                    <th>Район</th>
+                    <th>Наименование линии связи</th>
+                    <th>АМС</th>
+                    <th>ОЗП</th>
+                    <th>РИЧ</th>
+               </tr>
+           <tr>
+            {% if objectlist %}
+                {% for i in objectlist %}
+                    <tr>
+                        <td><a href="{{ i.get_absolute_url  }}">{{ i.object_name }}</a></td>
+                        <td>{{ i.uchastok.ceh }}</td>
+                        <td>{{ i.uchastok.uchastok }}</td>
+                        <td align="center">{{ i.position.latitude_degrees }}°{{ i.position.latitude_minutes }}'
+                            {{ i.position.latitude_seconds }}" <br>{{ i.position.longitude_degrees }}°{{ i.position.longitude_minutes }}'
+                            {{ i.position.longitude_seconds }}"</td>
+                        <td>{{ i.position.address }}</td>
+                        <td>{{ i.position.district }}</td>
+                        <td>{{ i.rrl_line.rrl_line_name }}</td>
+                        <td align="center">
+                            <form action="{% url 'main:change_object' i.pk %}">
+                            <button>Изменить</button>
+                            </form>
+                        </td>
+                        <td align="center">
+                            <form method="post" action="{% url 'main:delete_object' i.pk %}">
+                            {% csrf_token %}
+                            <button type="submit">Удалить</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <p>No polls are available.</p>
+            {% endif %}
+            </table>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Импорт файла{% endblock %}
+{% block content %}
+        <p>Выберите файл</p>
+            <form action="{% url 'main:upload_xls' %}" method="post" enctype="multipart/form-data">
+                <div>
+                    {{ form.as_p }}
+                    {% csrf_token %}
+                </div>
+                <div class="account-button">
+                    <input type="submit" value="Отправить файл">
+                </div>
+            </form>
+        <p>{{ msg }}</p>
+{% endblock %}

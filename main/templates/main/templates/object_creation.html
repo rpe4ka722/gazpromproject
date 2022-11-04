@@ -1,0 +1,16 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Создание объекта{% endblock %}
+{% block content %}
+        <p>Для создания объекта заполните представленную форму:</p>
+            <form action="{% url 'main:create_object' %}" method="post">
+                <div>
+                    {{ obj_form.as_p }}
+                    {{ pos_form.as_p }}
+                    {% csrf_token %}
+                </div>
+                <div class="account-button">
+                    <input type="submit" value="Создать объект">
+                </div>
+            </form>
+        <p>{{ msg }}</p>
+{% endblock %}

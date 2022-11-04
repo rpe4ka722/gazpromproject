@@ -1,0 +1,15 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Импорт файла{% endblock %}
+{% block content %}
+        <p>Выберите вкладку для импорта</p>
+            <form action="{% url 'main:upload_choice' object_id %}" method="post" enctype="multipart/form-data">
+                <div>
+                    {{ form.as_p }}
+                    {% csrf_token %}
+                </div>
+                <div class="account-button">
+                    <input type="submit" value="Отправить файл">
+                </div>
+            </form>
+        <p>{{ msg }}</p>
+{% endblock %}

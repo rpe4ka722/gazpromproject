@@ -1,0 +1,81 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Список объектов{% endblock %}
+{% block content %}
+    <div class="button-bar">
+        <span>
+            <form action="{% url 'main:create_uchastok' %}">
+                <button type="submit" value="Создать">Создать запись</button>
+            </form>
+        </span>
+        <span>
+            <form action="{% url 'main:export_xls_department' filtered_by %}">
+                <button type="submit" value="Создать">Выгрузить</button>
+            </form>
+        </span>
+        <div id="filter-button">
+            <span>
+                {% if filtered_by == 'all' %} Фильтрация отсутствует.
+                {% else %} Объекты отфильтрованы по: {{ filtered_by }}</span>
+                {% endif %}
+            <button type="submit" form="filter_reset" value="Сбросить" >Сбросить</button>
+            <input type="button" value="Фильтр" onmousedown="showhide('filter')" id="filter-button-dynamic">
+            <form id="filter_reset">
+                <a href={% url 'main:structure' %}>
+                </a>
+            </form>
+        </div>
+    </div>
+    <div id="filter">
+        <div class="filter-content">
+            <form id="filter_form" method="get" action={% url 'main:structure' %}>
+                <span>Фильтровать по цеху:</span>
+                <p>
+                    <select name="ceh" form="filter_form">
+                             {% for i in ceh %}
+                                <option value="{{ i }}">{{ i }}</option>
+                             {% endfor %}
+                    </select>
+                </p>
+            </form>
+        </div>
+        <div id="filter-button-bar">
+            <button type="submit" form="filter_form" value="Применить">Применить</button>
+        </div>
+    </div>
+    <div class="content">
+        <div class="table">
+            <table>
+                <tr>
+                    <th>Цех</th>
+                    <th>Участок</th>
+                    <th>Начальник участка</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+                <tr>
+            {% if objectlist %}
+                {% for i in objectlist %}
+                    <tr>
+                        <td>{{ i.ceh }}</td>
+                        <td>{{ i.uchastok }}</td>
+                        <td>{{ i.employee.employee_name }} {{ i.employee.employee_last_name }}</td>
+                        <td align="center">
+                            <form action="{% url 'main:change_uchastok' i.employee.pk %}">
+                            <button>Изменить</button>
+                            </form>
+                        </td>
+                        <td align="center">
+                            <form method="post" action="{% url 'main:delete_uchastok' i.pk %}">
+                                {% csrf_token %}
+                                <button type="submit">Удалить</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <p>No polls are available.</p>
+            {% endif %}
+            </table>
+        </div>
+    </div>
+{% endblock %}

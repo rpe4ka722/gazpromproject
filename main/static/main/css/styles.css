@@ -1,0 +1,531 @@
+#aside {
+    position: fixed;
+    height: 100vh;
+    width: 15%;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+#logo a {
+    width: 70%;
+    transition: transform 0.5s;
+}
+
+#logo a:hover {
+    transform: scale(1.2);
+}
+
+#logo a img {
+    width: 100%;
+}
+
+#logo {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    height: 20%;
+}
+
+#menu {
+    width: 45%;
+    height: 65%;
+    border: #0073BB solid;
+    border-radius: 40px;
+    margin: auto;
+    position: relative;
+    background-color: #0073BB;
+}
+
+#menu ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+#menu ul li {
+    position: relative;
+    text-align: center;
+}
+
+#menu a {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 80%;
+}
+
+#menu a .icon {
+    position: absolute;
+    left: 20%;
+    width: 60%;
+    height: 0;
+    padding-bottom: 30%;
+    padding-top: 30%;
+    border: #0073BB solid;
+    font-size: 100%;
+    text-align: center;
+    border-radius: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: white;
+    transition: transform 0.5s;
+}
+
+#menu ul li:hover a .icon {
+    transform: translateX(80px)
+
+}
+
+#menu ul li a {
+    text-decoration: none;
+}
+
+.icon {
+    color: #0073BB;
+}
+
+#menu ul li a .text {
+    opacity: 0;
+    transition: 0.5s;
+    color: white;
+}
+
+#menu ul li:hover a .text {
+    opacity: 100;
+}
+
+#content {
+    width: 83%;
+    max-width: 83%;
+    min-height: 80vh;
+    max-height: 80vh;
+    margin-left: 15%;
+    margin-top: 16vh;
+    position: fixed;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.button-bar {
+    position: absolute;
+    top:0;
+    height: 4vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    border: medium red;
+}
+
+#filter-button {
+    position: relative;
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    width: 100%;
+}
+
+
+#filter-button-dynamic {
+    width: 130px;
+    height: 4vh;
+    margin: 10px;
+}
+
+
+#filter {
+    position: absolute;
+    top: 4vh;
+    margin-top: 8px;
+    height: 30%;
+    width: 101%;
+    z-index: 1;
+    display:none;
+    background-color: darkgrey;
+    border-radius: 10px;
+    box-shadow: 15px 15px 10px black;
+}
+
+.filter-content {
+    width: 100%;
+    height: 65%;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    justify-content: start;
+}
+
+.filter-content p {
+    margin: 0;
+}
+
+.filter-content p select {
+    position: relative;
+    width: 98%;
+    height: 30px;
+}
+
+
+#filter-button-bar {
+    width: 100%;
+    height: 25%;
+    display: flex;
+    align-items: center;
+    justify-content: right;
+}
+
+
+#filter-button-bar button{
+    position: relative;
+    width: 130px;
+    height: 4vh;
+    margin-right: 10px;
+}
+
+
+.button-bar button {
+    width: 130px;
+    height: 4vh;
+    margin: 10px;
+}
+
+#content .content {
+    position: relative;
+    display: flex;
+    width: 100%;
+    margin-top: 5vh;
+    overflow: scroll;
+    min-height: 80vh;
+    max-height: 80vh;
+}
+
+.button {
+    width: 25%;
+    height: 25vh;
+    border-top-left-radius : 80px;
+    border-bottom-right-radius: 80px;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+    border: #0073BB solid 5px;
+    transition: 1s;
+}
+
+.button:hover {
+    transform: scale(1.05);
+    box-shadow: 10px 5px 5px black;
+}
+
+
+#content .button a {
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    transition: 1s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#rich {
+    background-image: url("../img/RICH.jpg");
+    background-size: cover;
+}
+
+#ams {
+    background-image: url("../img/AMS.jpg");
+    background-size: cover;
+}
+
+#equip {
+    background-image: url("../img/RRL.jpg");
+    background-size: cover;
+}
+
+#objects {
+    background-image: url("../img/link3.jpg");
+    background-size: cover;
+}
+
+#ozp {
+    background-image: url("../img/OZP.jpg");
+    background-size: cover;
+}
+
+#line {
+    background-image: url("../img/LINE.jpg");
+    background-size: cover;
+}
+
+#US {
+    background-image: url("../img/US.jpg");
+    background-size: cover;
+}
+
+#link2 {
+    background-image: url("../img/link2.jpg");
+    background-size: cover;
+}
+
+#content .button a:hover {
+    transform: scale(1.3)
+}
+
+.button-text {
+    text-decoration: none;
+    transition: 1s;
+    opacity: 0;
+    font-size: 30px;
+    color: whitesmoke;
+    font-weight: bold;
+    padding: 20px;
+    text-align: center;
+}
+
+.button:hover .button-text {
+    opacity: 0.7;
+}
+
+
+#header {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 83%;
+    max-width: 83%;
+    margin-left: 15%;
+    margin-top: 3%;
+    margin-right: 10px;
+    border-radius: 20px;
+    height: 10vh;
+    background-color: #0073BB;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1;
+}
+
+#header .header-text {
+    font-size: 20px;
+    color: white;
+}
+
+#header div {
+    padding: 20px;
+    border: white 20px;
+    display:flex;
+    flex-direction: row;
+    align-items: center;
+    height: 50%;
+}
+
+#header div a {
+    padding: 10px;
+    transition: 1s;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+#header div a:hover {
+    transform: scale(1.5);
+}
+
+#header div .icon {
+    color: white;
+    font-size: 30px;
+}
+
+
+body {
+    background-image: url("../img/1.jpg");
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+#forms {
+    width: 400px;
+    height: 60vh;
+    border-radius: 15px;
+    overflow: hidden;
+    position: relative;
+    text-align: center;
+    background-color: lightyellow;
+}
+
+#forms p label {
+    display:block;
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+#forms div {
+    width: 100%;
+    height: 43vh;
+    overflow: scroll;
+}
+
+.account-forms {
+    display: block;
+    border-radius: 5px;
+    width: 80%;
+    background-color: snow;
+    margin: auto;
+    height: 50px;
+    text-align: center;
+}
+
+#forms div::-webkit-scrollbar {
+    width: 0;
+    opacity:0;
+}
+
+.account-button {
+    position: static;
+    bottom: 0;
+    width: 80%;
+}
+
+.account-button input {
+    display: block;
+    margin: auto;
+    height: 50px;
+    border-radius: 5px;
+}
+
+[data-tooltip] {
+    position: relative; /* Относительное позиционирование */
+   }
+   [data-tooltip]::after {
+    content: attr(data-tooltip); /* Выводим текст */
+    position: absolute; /* Абсолютное позиционирование */
+    width: auto; /* Ширина подсказки */
+    font-size: 12px;
+    right: 0; top: 0; /* Положение подсказки */
+    #background: black; /* Синий цвет фона */
+    color: white; /* Цвет текста */
+    padding: 0.5em; /* Поля вокруг текста */
+    #box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3); /* Параметры тени */
+    pointer-events: none; /* Подсказка */
+    opacity: 0; /* Подсказка невидима */
+    transition: 0.5s; /* Время появления подсказки */
+   }
+   [data-tooltip]:hover::after {
+    opacity: 1; /* Показываем подсказку */
+    top: 3em; /* Положение подсказки */
+   }
+
+.btn {
+  box-sizing: border-box;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  background-color: transparent;
+  border: 2px solid #e74c3c;
+  border-radius: 0.6em;
+  cursor: pointer;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-self: center;
+      -ms-flex-item-align: center;
+          align-self: center;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1;
+  margin: 20px;
+  padding: 1.2em 2.8em;
+  text-decoration: none;
+  text-align: center;
+    font-family: "Times New Roman";
+}
+.btn:hover, .btn:focus {
+  color: black;
+  outline: 0;
+}
+
+.third {
+  border-color: #3498db;
+  color: black;
+  box-shadow: 0 0 40px 40px #3498db inset, 0 0 0 0 #3498db;
+  -webkit-transition: all 150ms ease-in-out;
+  transition: all 150ms ease-in-out;
+}
+.third:hover {
+  box-shadow: 0 0 10px 0 #3498db inset, 0 0 10px 4px #3498db;
+}
+
+table {
+	width: 100%;
+    max-width: 100%;
+	margin-bottom: 20px;
+	border: 2px solid black;
+	border-collapse: separate;
+    position: relative;
+    word-break: normal;
+}
+
+
+table th {
+	font-weight: bold;
+	padding: 5px;
+	background: darkgrey;
+	border: 1px solid black;
+}
+table td {
+	border: 2px solid black;
+	padding: 5px;
+    word-wrap:break-word;
+}
+
+
+::-webkit-scrollbar {
+  width: 0;
+}
+
+.head_row {
+    height: 20px;
+}
+
+
+.table_row {
+    height: 20px;
+}
+
+.table {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+.ozp-link img {
+    transition: transform 1s;
+}
+
+.ozp-link img:hover {
+    transform: scale(1.5);
+}
+
+table td div {
+    display: inline-flex;
+    align-items: center;
+    justify-items: center;
+}
+
+table td div a {
+    margin: 20px;
+    border: dimgray solid 3px;
+}
+

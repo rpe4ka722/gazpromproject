@@ -1,0 +1,18 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+    <div id="forms">
+        <p>Заполните данные чтобы войти:</p>
+        <form action="{% url 'account:login' %}" method="post" onreset="">
+            <div>
+                {{ form.as_p }}
+                {% csrf_token %}
+                <p>{{ msg }}</p>
+            </div>
+            <div class="account-button">
+                <input type="submit" value="Войти">
+            </div>
+        </form>
+
+    </div>
+{% endblock %}
