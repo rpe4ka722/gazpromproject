@@ -1,4 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+
+from django.db.models import Q
 from django.http import HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -6,7 +8,7 @@ from django.urls import reverse
 from .forms import ObjectForm, RrlForm, PositionForm, UploadXlsForm, UploadChoiceForm, ImportForm, DepartmentForm, \
     EmployeeForm
 from .models import Object, Position, RrlLine, Sheet, Header, UploadedData, Choice, Department, Employee, Ozp, \
-    Foto_zamechanya, Foto_vipolnenya
+    Foto_zamechanya, Foto_vipolnenya, Podano_na_vipolnenie
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Border, Side, Alignment, Font
 
@@ -162,8 +164,8 @@ def import_data(request, choice, object_id):
                         x.update({'address': cell.column})
             print(x)
             for row in range(row_count):
-                lat = ws.cell(row=row+5, column=x['coords_lat']).value
-                lon = ws.cell(row=row+5, column=x['coords_lon']).value
+                lat = ws.cell(row=row + 5, column=x['coords_lat']).value
+                lon = ws.cell(row=row + 5, column=x['coords_lon']).value
                 if lat is None or lon is None:
                     pass
                 else:
@@ -173,13 +175,13 @@ def import_data(request, choice, object_id):
                     print(z)
                     pos = Position(latitude_degrees=y[0], latitude_minutes=y[1], latitude_seconds=y[2],
                                    longitude_degrees=z[0], longitude_minutes=z[1], longitude_seconds=z[2],
-                                   address=ws.cell(row=row+5, column=x['address']).value,
-                                   district=ws.cell(row=row+5, column=x['district']).value)
+                                   address=ws.cell(row=row + 5, column=x['address']).value,
+                                   district=ws.cell(row=row + 5, column=x['district']).value)
                     print(pos.address)
                     pos.save()
                     user = request.user
                     time = datetime.now()
-                    obj = Object(object_name=ws.cell(row=row+5, column=x['object_name']).value, position=pos,
+                    obj = Object(object_name=ws.cell(row=row + 5, column=x['object_name']).value, position=pos,
                                  last_modify=user, time_modify=time)
                     obj.save()
             for i in Header.objects.all():
@@ -216,7 +218,7 @@ def structure(request):
 
     employee = Employee.objects.all()
     context = {'objectlist': objectslist, 'employee': employee, 'ceh': ceh_list, 'filtered_by': filtered_by}
-    return render(request, "main/templates/structure.html",  context)
+    return render(request, "main/templates/structure.html", context)
 
 
 def create_uchastok(request):
@@ -294,8 +296,8 @@ def export_xls_department(request, ceh):
                           shrink_to_fit=False,
                           indent=0)
     for col_num in range(len(columns)):
-        ws.cell(row_num, col_num+1, columns[col_num])
-        ws.cell(row_num, col_num+1).font = font
+        ws.cell(row_num, col_num + 1, columns[col_num])
+        ws.cell(row_num, col_num + 1).font = font
         ws.cell(row_num, col_num + 1).border = border
         ws.cell(row_num, col_num + 1).alignment = alignment
     ws.column_dimensions['A'].width = 30
@@ -311,7 +313,7 @@ def export_xls_department(request, ceh):
         atr_list = [rows[row].ceh, rows[row].uchastok, rows[row].employee.employee_name + ' ' +
                     rows[row].employee.employee_last_name]
         for col_num in range(len(atr_list)):
-            ws.cell(row+2, col_num+1, atr_list[col_num])
+            ws.cell(row + 2, col_num + 1, atr_list[col_num])
             ws.cell(row + 2, col_num + 1).font = font2
             ws.cell(row + 2, col_num + 1).border = border
             ws.cell(row + 2, col_num + 1).alignment = alignment
@@ -365,7 +367,7 @@ def export_objects(request):
 
 def change_object(request, pk):
     try:
-        obj = Object.objects.get(id=pk)
+        Object.objects.get(id=pk)
     except Department.DoesNotExist:
         return HttpResponseNotFound("<h2>Not found</h2>")
     if request.method == 'POST':
@@ -390,7 +392,6 @@ def change_object(request, pk):
             msg = 'Введенные данные некорректны'
             return render(request, "main/templates/object_creation.html", {'obj_form': obj_form,
                                                                            'pos_form': pos_form, 'msg': msg})
-
 
 
 def delete_object(reqest, pk):
@@ -429,9 +430,119 @@ def ozp_create(request):
 
 
 def ozp(request):
+    # получение списков данных для меню выбора -------------------
     objectslist = Ozp.objects.all()
-    context = {'objectlist': objectslist}
-    return render(request, "main/templates/ozp.html", context)
+    dep = Department.objects.all()
+    ceh_list = []
+    uchastok_list = []
+    year_list = []
+    for i in dep:
+        if i.ceh in ceh_list:
+            pass
+        else:
+            ceh_list.append(i.ceh)
+        if i.uchastok in uchastok_list:
+            pass
+        else:
+            uchastok_list.append(i.uchastok)
+    for i in objectslist:
+        try:
+            year = i.zakrytie_date.year
+            if str(year) in year_list:
+                pass
+            else:
+                year_list.append(str(i.zakrytie_date.year))
+        except AttributeError:
+            pass
+    # --------------------------------------------------------------
+    # получение введенных в фильр данных --------------------------
+    if request.GET:
+        ceh = request.GET['ceh']
+        uchastok = request.GET['uchastok']
+        vipolnenie = request.GET['vipolnenie']
+        na_vipolnenie = request.GET['na_vipolnenie']
+        year_filter = []
+        this_month = request.GET['this_month']
+    # ------------------------------------------------------------------------
+    # получение списка выбранных годов----------------------------------------
+        for i in year_list:
+            q = ''.join(['year_', str(i)])
+            try:
+                year_filter.append(request.GET[q])
+            except KeyError:
+                pass
+    # -------------------------------------------------------------------------
+    # фильтрация по объектам сети----------------------------------------------
+        filtered_departments = department_filter(ceh, uchastok)[0]
+        filtered_by_department = " ".join(department_filter(ceh, uchastok)[1])
+        filtered_objects = Object.objects.filter(uchastok__in=filtered_departments)
+        filtered_ozp_objects = Ozp.objects.filter(object_name__in=filtered_objects)
+    # фильтрация по выполнению -----------------------------------------------------
+        if vipolnenie == '1':
+            filtered_by_vipolnenie = 'Выполненным'
+            filtered_ozp_objects = filtered_ozp_objects.filter(is_done=True)
+        elif vipolnenie == '0':
+            filtered_by_vipolnenie = 'Невыполненным'
+            filtered_ozp_objects = filtered_ozp_objects.filter(is_done=False)
+        else:
+            filtered_by_vipolnenie = ''
+    # -----------------------------------------------------------------------------
+    # фильтрация по поданным на выполннеине ----------------------------------------
+        if na_vipolnenie == '1':
+            filtered_by_na_vipolnenie = 'Поданным на устранение'
+            filtered_podano = Podano_na_vipolnenie.objects.filter(podano=True)
+            filtered_ozp_objects = filtered_ozp_objects.filter(podano_na_vipolnenie__in=filtered_podano)
+        elif na_vipolnenie == '0':
+            filtered_by_na_vipolnenie = 'Не поданным на устранение'
+            filtered_podano = Podano_na_vipolnenie.objects.filter(podano=False)
+            filtered_ozp_objects = filtered_ozp_objects.filter(podano_na_vipolnenie__in=filtered_podano)
+        else:
+            filtered_by_na_vipolnenie = ''
+    # -------------------------------------------------------------------
+    # фильтрация по году-------------------------------------------------
+        if year_filter != year_list:
+            filtered_ozp_objects = filtered_ozp_objects.filter(zakrytie_date__year__in=year_filter)
+            filtered_by_year = 'По следующим годам ' + ' '.join(year_filter)
+        else:
+            filtered_by_year = ''
+    # -------------------------------------------------------------------
+    # фильтрация по выполнению в течении месяца--------------------------
+        if this_month == 'this_month':
+            month = datetime.today() + timedelta(days=30)
+            filtered_ozp_objects = filtered_ozp_objects.filter(zakrytie_date__lt=month)
+            filtered_by_month = 'По необходимости выполнения в течении месяца'
+        else:
+            filtered_by_month = ''
+    # -------------------------------------------------------------------
+        filtered_by = ' '.join([filtered_by_department, filtered_by_vipolnenie, filtered_by_na_vipolnenie,
+                                filtered_by_year, filtered_by_month])
+        context = {'objectlist': filtered_ozp_objects, 'ceh': ceh_list, 'uchastok': uchastok_list, 'year': year_list,
+                   'filtered_by': filtered_by}
+        return render(request, "main/templates/ozp.html", context)
+    else:
+        filtered_ozp_objects = Ozp.objects.all()
+        filtered_by = str('')
+        context = {'objectlist': filtered_ozp_objects, 'ceh': ceh_list, 'uchastok': uchastok_list, 'year': year_list,
+                   'filtered_by': filtered_by}
+        return render(request, "main/templates/ozp.html", context)
+
+
+# функция получения отфильтрованных департаментов по цеху и участку-----------------------
+def department_filter(ceh, uchastok):
+    filtered_by = []
+    if ceh == 'all' and uchastok == 'all':
+        filtered_department = Department.objects.all()
+    elif ceh == 'all' and uchastok != 'all':
+        filtered_department = Department.objects.filter(uchastok=uchastok)
+        filtered_by = [uchastok]
+    elif ceh != 'all' and uchastok == 'all':
+        filtered_department = Department.objects.filter(ceh=ceh)
+        filtered_by = [ceh]
+    else:
+        filtered_department = Department.objects.filter(Q(ceh=ceh), Q(uchastok=uchastok))
+        filtered_by = [uchastok, ceh]
+    return filtered_department, filtered_by
+# --------------------------------------------------------------------------------------------
 
 
 def ozp_details(request, ozp_id):
@@ -489,20 +600,25 @@ def foto_zamechanie_add(request, ozp_id):
             x.save()
         except KeyError:
             pass
+        object.save()
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
 def foto_do_delete(request, f_id):
     x = Foto_zamechanya.objects.get(id=f_id)
     ozp_id = x.zamechanie.id
+    z = Ozp.objects.get(id=ozp_id)
     x.delete()
+    z.save()
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
 def posle_foto_delete(request, f_id):
     x = Foto_vipolnenya.objects.get(id=f_id)
     ozp_id = x.zamechanie.id
+    z = Ozp.objects.get(id=ozp_id)
     x.delete()
+    z.save()
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
@@ -515,6 +631,7 @@ def foto_vipolnenie_add(request, ozp_id):
             x.save()
         except KeyError:
             pass
+        object.save()
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
@@ -523,3 +640,182 @@ def accept(request, ozp_id):
     object.is_done = True
     object.save()
     return redirect('main:ozp_details', ozp_id=ozp_id)
+
+
+def podano_na_vipolnenie(request, ozp_id):
+    object = Ozp.objects.get(id=ozp_id)
+    if request.method == 'POST':
+        comment = request.POST['comment']
+        user = request.user
+        time = datetime.now()
+        try:
+            obj = Podano_na_vipolnenie.objects.get(zamechanie=object)
+            try:
+                uploaded_file = request.FILES['foto']
+                x = Foto_vipolnenya.objects.create(zamechanie=object, foto=uploaded_file)
+                x.save()
+            except KeyError:
+                pass
+            try:
+                obj.comment = comment
+                obj.otklonit_comment = None
+                obj.podano = True
+                obj.user = user
+                obj.time_podano = time
+                obj.save()
+            except KeyError:
+                pass
+        except:
+            try:
+                uploaded_file = request.FILES['foto']
+                x = Foto_vipolnenya.objects.create(zamechanie=object, foto=uploaded_file)
+                x.save()
+            except KeyError:
+                pass
+            try:
+                y = Podano_na_vipolnenie.objects.create(comment=comment, otklonit_comment=None, zamechanie=object,
+                                                        podano=True, user=user, time_podano=time)
+                y.save()
+            except KeyError:
+                pass
+    return redirect('main:ozp_details', ozp_id=ozp_id)
+
+
+def not_accept(request, ozp_id):
+    obj = Ozp.objects.get(id=ozp_id)
+    y = Podano_na_vipolnenie.objects.get(zamechanie=obj)
+    user = request.user
+    time = datetime.now()
+    if request.method == 'POST':
+        otklonit_comment = request.POST['comment']
+        y.otklonit_comment = otklonit_comment
+        y.user = user
+        y.time_podano = time
+        y.podano = False
+        y.save()
+    return redirect('main:ozp_details', ozp_id=ozp_id)
+
+
+def export_xls_ozp(request):
+    if request.method == 'GET':
+        try:
+            ceh = request.GET['ceh']
+            uchastok = request.GET['uchastok']
+            vipolnenie = request.GET['vipolnenie']
+            na_vipolnenie = request.GET['na_vipolnenie']
+            this_month = request.GET['this_month']
+            objectslist = Ozp.objects.all()
+            year_list = []
+            year_filter = []
+            for i in objectslist:
+                try:
+                    year = i.zakrytie_date.year
+                    if str(year) in year_list:
+                        pass
+                    else:
+                        year_list.append(str(i.zakrytie_date.year))
+                except AttributeError:
+                    pass
+            for i in year_list:
+                q = ''.join(['year_', str(i)])
+                try:
+                    year_filter.append(request.GET[q])
+                except KeyError:
+                    pass
+            # -------------------------------------------------------------------------
+            # фильтрация по объектам сети----------------------------------------------
+            filtered_departments = department_filter(ceh, uchastok)[0]
+            filtered_objects = Object.objects.filter(uchastok__in=filtered_departments)
+            filtered_ozp_objects = Ozp.objects.filter(object_name__in=filtered_objects)
+            # фильтрация по выполнению -----------------------------------------------------
+            if vipolnenie == '1':
+                filtered_ozp_objects = filtered_ozp_objects.filter(is_done=True)
+            elif vipolnenie == '0':
+                filtered_ozp_objects = filtered_ozp_objects.filter(is_done=False)
+            else:
+                pass
+            # -----------------------------------------------------------------------------
+            # фильтрация по поданным на выполннеине ----------------------------------------
+            if na_vipolnenie == '1':
+                filtered_podano = Podano_na_vipolnenie.objects.filter(podano=True)
+                filtered_ozp_objects = filtered_ozp_objects.filter(podano_na_vipolnenie__in=filtered_podano)
+            elif na_vipolnenie == '0':
+                filtered_podano = Podano_na_vipolnenie.objects.filter(podano=False)
+                filtered_ozp_objects = filtered_ozp_objects.filter(podano_na_vipolnenie__in=filtered_podano)
+            else:
+                pass
+            # -------------------------------------------------------------------
+            # фильтрация по году-------------------------------------------------
+            if year_filter != year_list:
+                filtered_ozp_objects = filtered_ozp_objects.filter(zakrytie_date__year__in=year_filter)
+            else:
+                pass
+            # -------------------------------------------------------------------
+            # фильтрация по выполнению в течении месяца--------------------------
+            if this_month == 'this_month':
+                month = datetime.today() + timedelta(days=30)
+                filtered_ozp_objects = filtered_ozp_objects.filter(zakrytie_date__lt=month)
+            else:
+                pass
+        except KeyError:
+            filtered_ozp_objects = Ozp.objects.all()
+        # выгрузка в xls -----------------------------------------------------
+        response = HttpResponse(content_type='application/ms-excel')
+        response['Content-Disposition'] = 'attachment; filename="ozp.xlsx"'
+        wb = Workbook()
+        rows = filtered_ozp_objects
+        ws = wb.active
+        row_num = 1
+        columns = ['Объект', 'Участок связи', 'Цех', 'Содержание замечания', 'Нормативная документация',
+                   'Контрольная дата', 'Дата устранения', 'Устранено', 'Подано на устарнение']
+        font = Font(name='TimesNewRoman', sz=11, bold=True)
+        font2 = Font(name='TimesNewRoman', sz=11, bold=False)
+        border = Border(left=Side(border_style='thin', color='FF000000'),
+                        right=Side(border_style='thin', color='FF000000'),
+                        top=Side(border_style='thin', color='FF000000'),
+                        bottom=Side(border_style='thin', color='FF000000'))
+        alignment = Alignment(horizontal='center',
+                                vertical='center',
+                                text_rotation=0,
+                                wrap_text=True,
+                                shrink_to_fit=False,
+                                indent=0)
+        for col_num in range(len(columns)):
+            ws.cell(row_num, col_num + 1, columns[col_num])
+            ws.cell(row_num, col_num + 1).font = font
+            ws.cell(row_num, col_num + 1).border = border
+            ws.cell(row_num, col_num + 1).alignment = alignment
+        ws.column_dimensions['A'].width = 30
+        ws.column_dimensions['B'].width = 30
+        ws.column_dimensions['C'].width = 30
+        ws.column_dimensions['D'].width = 30
+        ws.column_dimensions['E'].width = 30
+        ws.column_dimensions['F'].width = 30
+        ws.column_dimensions['G'].width = 30
+        ws.column_dimensions['H'].width = 30
+        ws.column_dimensions['I'].width = 30
+        ws.column_dimensions['J'].width = 30
+        for row in range(rows.count()):
+            if rows[row].is_done:
+                x = 'Да'
+            else:
+                x = 'Нет'
+            try:
+                if rows[row].podano_na_vipolnenie.podano:
+                    y = 'Да'
+                else:
+                    y = 'Нет'
+            except :
+                y = 'Нет'
+            atr_list = [rows[row].object_name.object_name, rows[row].object_name.uchastok.ceh,
+                        rows[row].object_name.uchastok.uchastok, rows[row].zamechanie_ozp,
+                        rows[row].normative_documentation, rows[row].control_date, rows[row].zakrytie_date, x, y]
+            for col_num in range(len(atr_list)):
+                ws.cell(row + 2, col_num + 1, atr_list[col_num])
+                ws.cell(row + 2, col_num + 1).font = font2
+                ws.cell(row + 2, col_num + 1).border = border
+                ws.cell(row + 2, col_num + 1).alignment = alignment
+        wb.save(response)
+        return response
+
+

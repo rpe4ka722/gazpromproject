@@ -10,150 +10,310 @@
     </div>
     <div class="content">
         <div class="table">
-        <table>
-            <tr>
-                <td>Объект</td>
-                <td colspan="2">
-                    <a href="{{ i.object_name.get_absolute_url }}">
-                        {{ i.object_name.object_name }}
-                    </a>
-                </td>
-            </tr>
-            <tr>
-                <td>Содержание замечания</td>
-                <td>{{ i.zamechanie_ozp }}</td>
-                <td align="center" width="55">
-                    <form method="post" action="{% url 'main:ozp_zamechanie_change' i.id %}" id="text_zamechanya" >
-                        {% csrf_token %}
-                        <textarea rows="5" cols="50" name="text_zamechanya" id="text_zamechanya" maxlength="500">
-                        </textarea>
-                        <br>
-                        <input type="submit" value="Изменить">
-                    </form>
-                </td>
-            </tr>
-            <tr>
-                <td>Нормативная документация</td>
-                <td>{{ i.normative_documentation }}</td>
-                <td align="center" width="55">
-                    <form method="post" action="{% url 'main:ozp_normative_change' i.id %}" onload="ClearForm()">
-                        {% csrf_token %}
-                        <textarea rows="5" cols="50" name="text_normative" id="text_normative" maxlength="500">
-                        </textarea>
-                        <input type="submit" value="Изменить">
-                    </form>
-                </td>
-            </tr>
-            <tr>
-                <td>Срок устранения</td>
-                <td>
-                    {% if i.zakrytie_date %}
-                        {{ i.zakrytie_date }}
-                    {% else %}
-                        Срок не установлен
-                    {% endif %}
+            <table>
+                <tr>
+                    <td><h3>Объект</h3></td>
+                    <td colspan="2">
+                        <a href="{{ i.object_name.get_absolute_url }}">
+                            {{ i.object_name.object_name }}
+                        </a>
                     </td>
-                <td>
-                    <form method="post" action="{% url 'main:srok_ustranenia_change' i.id %}">
-                        {% csrf_token %}
-                        <input type="date" name="srok" id="srok" maxlength="500">
-                        <input type="submit" value="Изменить">
-                    </form>
-                </td>
-            </tr>
-            <tr>
-                <td>Контрольный срок</td>
-                <td>
-                    {% if i.control_date %}
-                    {{ i.control_date }}
-                    {% else %}
-                    Срок не установлен
-                    {% endif %}
-                </td>
-                <td>
-                    <form method="post" action="{% url 'main:control_srok_change' i.id %}">
-                        {% csrf_token %}
-                        <input type="date" name="srok" id="srok" maxlength="500">
-                        <input type="submit" value="Изменить">
-                    </form>
-                </td>
-            </tr>
-            <tr>
-                <td>Фотография замечания</td>
-                <td>
-                    {% if foto_do %}
-                        {% for f in foto_do %}
-                            <br>
-                            <div class="foto_ozp">
-                            <a href="{{ f.foto.url }}" target="_blank">
-                                <img src="{{ f.foto.url }}" height="200">
-                            </a>
-                            <form action="{% url 'main:foto_do_delete' f.id %}">
-                                <button type="submit" value="Удалить">Удалить</button>
-                            </form>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <p>Фото отсутствует</p>
-                    {% endif %}
-                </td>
-                <td>
-                    <form method="post" action="{% url 'main:foto_zamechanie_add' i.id %}" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <input type="file" name="foto" id="foto">
-                        <br>
-                        <br>
-                        <input type="submit" value="Загрузить">
-                    </form>
-                </td>
-            </tr>
-            <tr>
-                <td>Фотография утранения замечания</td>
-                <td>
-                    {% if posle_foto %}
-                        {% for f in posle_foto %}
-                            <br>
-                            <div class="foto_ozp">
-                            <a href="{{ f.foto.url }}" target="_blank">
-                                <img src="{{ f.foto.url }}" height="200">
-                            </a>
-                            <form action="{% url 'main:posle_foto_delete' f.id %}">
-                                <button type="submit" value="Удалить">Удалить</button>
-                            </form>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <p>Фото отсутствует</p>
-                    {% endif %}
-                </td>
-                <td>
-                    <form method="post" action="{% url 'main:foto_vipolnenie_add' i.id %}" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <input type="file" name="foto" id="foto">
-                        <br>
-                        <br>
-                        <input type="submit" value="Загрузить">
-                    </form>
-                </td>
-            </tr>
-            <tr>
-                <td>Статус</td>
-                <td align="center">
-                    {% if i.is_done == 0 %}
-                        <img src="/static/main/img/free-png.ru-388.png" height="20" width="20">
-                        <br>В работе
-                    {% else %}
-                        <img src="/static/main/img/free-png.ru-39.png" height="20" width="20">
-                        <br>Выполнено
-                    {% endif %}
-                </td>
-                <td>
-                    <form action="{% url 'main:accept' i.id %}">
-                        <button type="submit" value="Выполнение">Подтвердить выполнение</button>
-                    </form>
-                </td>
-            </tr>
-        </table>
+                </tr>
+                <tr>
+                    <td><h3>Содержание замечания</h3></td>
+                    <td>{{ i.zamechanie_ozp }}</td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_zamechanie')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><h3>Нормативная документация</h3></td>
+                    <td>{{ i.normative_documentation }}</td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_normative')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><h3>Срок устранения</h3></td>
+                    <td>
+                        {% if i.zakrytie_date %}
+                            {{ i.zakrytie_date }}
+                        {% else %}
+                            Срок не установлен
+                        {% endif %}
+                        </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_srok')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><h3>Контрольный срок</h3></td>
+                    <td>
+                        {% if i.control_date %}
+                        {{ i.control_date }}
+                        {% else %}
+                        Срок не установлен
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('control_srok')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><h3>Фотография замечания</h3></td>
+                    <td>
+                        {% if foto_do %}
+                            {% for f in foto_do %}
+                                <div class="foto_ozp">
+                                    <a href="{{ f.foto.url }}" target="_blank">
+                                        <img src="{{ f.foto.url }}">
+                                    </a>
+                                    <button onmousedown="showhide_changeform('foto_do_{{ f.id }}')" class="foto_button">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                                <div id="foto_do_{{ f.id }}" class="delete_foto_ozp">
+                                    <h4>Вы уверены что хотите удалить фотогрфию?</h4>
+                                    <form action="{% url 'main:foto_do_delete' f.id %}">
+                                        <button type="submit" value="Удалить">
+                                            Да
+                                        </button>
+                                        <button onmousedown="showhide_changeform('foto_do_{{ f.id }}')" class="close_button">
+                                            Нет
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>Фото отсутствует</p>
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('foto_zamechania')" class="change_button">
+                             <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><h3>Фотография устранения замечания</h3></td>
+                    <td>
+                        {% if posle_foto %}
+                            {% for f in posle_foto %}
+                                <div class="foto_ozp">
+                                    <a href="{{ f.foto.url }}" target="_blank">
+                                        <img src="{{ f.foto.url }}" height="200">
+                                    </a>
+                                    <button onmousedown="showhide_changeform('foto_posle_{{ f.id }}')" class="foto_button">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                                <div id="foto_posle_{{ f.id }}" class="delete_foto_ozp">
+                                    <h4>Вы уверены что хотите удалить фотогрфию?</h4>
+                                    <form action="{% url 'main:posle_foto_delete' f.id %}" class="">
+                                        <button type="submit" value="Удалить">
+                                            Да
+                                        </button>
+                                        <button onmousedown="showhide_changeform('foto_posle_{{ f.id }}')" class="close_button">
+                                            Нет
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>Фото отсутствует</p>
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('foto_ustranenia')" class="change_button">
+                             <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </td>
+                </tr>
+            {% if i.is_done == 0 %}
+                <tr>
+                    <td><h3>Подать на рассмотрение</h3></td>
+                    <td>
+                        {% if i.podano_na_vipolnenie %}
+                            {% if i.podano_na_vipolnenie.podano == True %}
+                                Замечание устранено пользователем {{ i.podano_na_vipolnenie.user.first_name }}
+                                {{ i.podano_na_vipolnenie.user.last_name }} от {{ i.podano_na_vipolnenie.time_podano }}.
+                                <br>
+                                Комментарий:
+                                {{ i.podano_na_vipolnenie.comment }}
+                            {% else %}
+                                Заявка на устранение поданное с комментарием {{ i.podano_na_vipolnenie.comment }}
+                                отклонена пользователем {{ i.podano_na_vipolnenie.user.first_name }}
+                                {{ i.podano_na_vipolnenie.user.last_name }} от {{ i.podano_na_vipolnenie.time_podano }}
+                                с комментарием {{ i.podano_na_vipolnenie.otklonit_comment }}. Желаете снова подать
+                                замечание на выполнение???
+                                <button onmousedown="showhide_changeform('vipolnenie')" class="change_button">
+                                <i class="fa-solid fa-check"></i>
+                                </button>
+                            {% endif %}
+                        {% else %}
+                            Никто еще не отчитывался об устранении замечания. Желаете сделать это?
+                            <button onmousedown="showhide_changeform('vipolnenie')" class="change_button">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+                        {% endif %}
+                    </td>
+                    <td align="center">
+                        {% if i.podano_na_vipolnenie.podano == True %}
+                            <button onmousedown="showhide_changeform('otklonit_vipolnenie')" class="change_button">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endif %}
+                                <tr>
+                    <td><h3>Статус</h3></td>
+                    <td align="center">
+                        {% if i.is_done == 0 %}
+                            <img src="/static/main/img/free-png.ru-388.png" height="20" width="20">
+                            <br>В работе
+                        {% else %}
+                            <img src="/static/main/img/free-png.ru-39.png" height="20" width="20">
+                            <br>Выполнено
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        {% if i.is_done == 0 %}
+                            <button onmousedown="showhide_changeform('accept')" class="change_button">
+                                 <i class="fa-solid fa-check"></i>
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td><h3>Изменения внес</h3></td>
+                    <td colspan="2">{{ i.last_modify.first_name }} {{ i.last_modify.last_name }} {{ i.time_modify }}</td>
+                </tr>
+            </table>
+        </div>
+        <div id="change_zamechanie" class="change_form_ozp">
+            <form method="post" action="{% url 'main:ozp_zamechanie_change' i.id %}" id="text_zamechanya" >
+                {% csrf_token %}
+                Опишите замечание:
+                <br>
+                <textarea name="text_zamechanya" id="text_zamechanya" maxlength="500">
+                </textarea>
+                <br>
+                <input type="submit" value="Изменить">
+                <button onmousedown="showhide_changeform('change_zamechanie')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <div id="change_normative" class="change_form_ozp">
+            <form method="post" action="{% url 'main:ozp_normative_change' i.id %}" onload="ClearForm()">
+                {% csrf_token %}
+                Ссылка на нормативную документацию:
+                <br>
+                <textarea name="text_normative" id="text_normative" maxlength="500">
+                </textarea>
+                <br>
+                <input type="submit" value="Изменить">
+                <button onmousedown="showhide_changeform('change_normative')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <div id="change_srok" class="change_form_ozp">
+            <form method="post" action="{% url 'main:srok_ustranenia_change' i.id %}">
+                {% csrf_token %}
+                Укажите срок устранения замечания:
+                <br>
+                <input type="date" name="srok" id="srok" class="date_choice">
+                <br>
+                <input type="submit" value="Изменить">
+                <button onmousedown="showhide_changeform('change_srok')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <div id="control_srok" class="change_form_ozp">
+            <form method="post" action="{% url 'main:control_srok_change' i.id %}">
+                {% csrf_token %}
+                Укажите контрольный срок:
+                <br>
+                <input type="date" name="srok" id="srok" class="date_choice">
+                <br>
+                <input type="submit" value="Изменить">
+                <button onmousedown="showhide_changeform('control_srok')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <div id="foto_zamechania" class="change_form_ozp">
+            <form method="post" action="{% url 'main:foto_zamechanie_add' i.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                Добавить фотографию замечания:
+                <br>
+                <input type="file" name="foto" id="foto">
+                <br>
+                <br>
+                <input type="submit" value="Загрузить">
+                <button onmousedown="showhide_changeform('foto_zamechania')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <div id="foto_ustranenia" class="change_form_ozp">
+            <form method="post" action="{% url 'main:foto_vipolnenie_add' i.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                Добавить фотографию устранения замечания:
+                <br>
+                <input type="file" name="foto" id="foto">
+                <br>
+                <br>
+                <input type="submit" value="Загрузить">
+                <button onmousedown="showhide_changeform('foto_ustranenia')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <div id="accept" class="change_form_ozp">
+            <form action="{% url 'main:accept' i.id %}">
+                <h4>Вы уверены что хотите принять устранение замечания?</h4>
+                <button type="submit" value="Выполнение">Да</button>
+                <button onmousedown="showhide_changeform('accept')" class="close_button">
+                    Нет
+                </button>
+            </form>
+        </div>
+        <div id="vipolnenie" class="change_form_ozp">
+            <form method="post" action="{% url 'main:podano_na_vipolnenie' i.id %}" id="comment_form" >
+                {% csrf_token %}
+                Для устранения замечания загрузите фографию:
+                <input type="file" name="foto" id="foto">
+                <br>
+                Напишите комментарий:
+                <textarea name="comment" id="comment" maxlength="500">
+                </textarea>
+                <input type="submit" value="Выполнить">
+                <button onmousedown="showhide_changeform('vipolnenie')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <div id="otklonit_vipolnenie" class="change_form_ozp">
+            <form method="post" action="{% url 'main:not_accept' i.id %}">
+                {% csrf_token %}
+                Замечание не принято!
+                Напишите комментарий:
+                <textarea name="comment" id="comment" maxlength="500">
+                </textarea>
+                <input type="submit" value="Отклонить">
+            </form>
         </div>
     </div>
 {% endblock %}

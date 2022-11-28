@@ -187,7 +187,7 @@ class Choice(models.Model):
 
 
 class Ozp(models.Model):
-    object_name = models.ForeignKey(Object, on_delete=models.CASCADE)
+    object_name = models.ForeignKey(Object, on_delete=models.CASCADE, related_name='object')
     zamechanie_ozp = models.TextField(max_length=500)
     normative_documentation = models.CharField(max_length=100, blank=True, null=True)
     creation_date = models.DateField(auto_now_add=True)
@@ -202,17 +202,12 @@ class Ozp(models.Model):
 
 
 class Foto_zamechanya(models.Model):
-    zamechanie = models.ForeignKey(Ozp, on_delete=models.CASCADE)
-    foto = models.ImageField(upload_to='img/', validators=[FileExtensionValidator(allowed_extensions=['.png',
-                                                                                                         '.jpg',
-                                                                                                         '.jpeg',
-                                                                                                         '.tiff',
-                                                                                                         '.bmp',
-                                                                                                         '.gif'],
-                                                                                     message='Тип файла выбран '
-                                                                                             'неверно. Выберите файл'
-                                                                                             ' изображения.'
-                                                                                     )])
+    zamechanie = models.ForeignKey(Ozp, on_delete=models.CASCADE, related_name='foto_zamechania')
+    foto = models.ImageField(upload_to='img/', validators=[FileExtensionValidator(allowed_extensions=['.png', '.jpeg',
+                                                                                                      '.tiff', '.bmp',
+                                                                                                      '.gif'],
+                                                                                  message='Тип файла выбран неверно. '
+                                                                                          'Выберите файл изображения.')])
 
 
 class Foto_vipolnenya(models.Model):
@@ -227,3 +222,12 @@ class Foto_vipolnenya(models.Model):
                                                                                              'неверно. Выберите файл'
                                                                                              ' изображения.'
                                                                                      )])
+
+
+class Podano_na_vipolnenie(models.Model):
+    zamechanie = models.OneToOneField(Ozp, on_delete=models.CASCADE, related_name='podano_na_vipolnenie')
+    podano = models.BooleanField(default=False)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    time_podano = models.DateTimeField(auto_now=True)
+    comment = models.TextField(max_length=500)
+    otklonit_comment = models.TextField(max_length=500, blank=True, null=True)

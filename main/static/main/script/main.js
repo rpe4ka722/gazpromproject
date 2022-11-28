@@ -5,3 +5,7 @@ function showhide(id) {
     a.value = (a.value == "Скрыть фильтр") ? "Фильтр" : "Скрыть фильтр";
 }
 
+function showhide_changeform(id) {
+    var e = document.getElementById(id);
+    e.style.display = (e.style.display == 'block') ? 'none' : 'block';
+}
