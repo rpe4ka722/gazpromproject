@@ -1,4 +1,7 @@
 import pandas as pd
+from django.shortcuts import redirect, render
+
+from account.forms import LoginForm
 
 
 def column_dict(name, sheet_name=0, row_number=0):
@@ -32,3 +35,23 @@ def str_to_coord(s: str):
     round(float(seconds), 2)
     result = [deg, minutes, seconds]
     return result
+
+
+def redirect_after_login(nxt):
+    if nxt is None:
+        return redirect("main:index")
+    else:
+        return redirect(nxt)
+
+
+def is_staff(view_func):
+    def decorator(request, *args, **kwargs):
+        u = request.user
+        if u.is_active and u.is_staff:
+            return view_func(request, *args, **kwargs)
+        else:
+            msg = 'У вас недостаточно прав для данной операции. Обратитесь к администратору либо авторизуйтесь под ' \
+                  'другим именем.'
+            form = LoginForm
+            return render(request, 'account/templates/login.html', {'form': form, 'msg': msg})
+    return decorator

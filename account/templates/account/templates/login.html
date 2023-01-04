@@ -7,7 +7,10 @@
             <div>
                 {{ form.as_p }}
                 {% csrf_token %}
-                <p>{{ msg }}</p>
+                {% if request.GET.next %}
+                    <input type="hidden" name="next" value="{{ request.GET.next }}">
+                {% endif %}
+                <p class="alert">{{ msg }}</p>
             </div>
             <div class="account-button">
                 <input type="submit" value="Войти">

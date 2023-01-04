@@ -615,3 +615,6 @@ table td {
     width: 94%;
 }
 
+.alert {
+    color: red;
+}

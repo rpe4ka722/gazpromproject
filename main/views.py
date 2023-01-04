@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 
+from main.scripts import is_staff
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, redirect
@@ -15,20 +17,18 @@ from openpyxl.styles import Border, Side, Alignment, Font
 from .scripts import str_to_coord
 
 
+@login_required(login_url='account:login')
 def index(request):
-    if request.user.is_authenticated:
-        return render(request, 'main/templates/index.html')
-    else:
-        return redirect('/account/login')
+    return render(request, 'main/templates/index.html')
 
 
+@login_required(login_url='account:login')
 def object_index(request):
-    if request.user.is_authenticated:
-        return render(request, 'main/templates/object_index.html')
-    else:
-        return redirect('/account/login')
+    return render(request, 'main/templates/object_index.html')
 
 
+@login_required(login_url='account:login')
+@is_staff
 def create_object(request):
     if request.method == 'POST':
         obj_form = ObjectForm(request.POST)
@@ -59,6 +59,8 @@ def create_object(request):
     return render(request, "main/templates/object_creation.html", {'obj_form': obj_form, 'pos_form': pos_form})
 
 
+@login_required(login_url='account:login')
+@is_staff
 def create_rrl(request):
     if request.method == 'POST':
         form = RrlForm(request.POST)
@@ -77,6 +79,7 @@ def create_rrl(request):
     return render(request, "main/templates/rrl_creation.html", {'form': form})
 
 
+@login_required(login_url='account:login')
 def objects_list(request):
     objectslist = Object.objects.all()
     position = Position.objects.all()
@@ -84,6 +87,7 @@ def objects_list(request):
     return render(request, 'main/templates/objects.html', context)
 
 
+@login_required(login_url='account:login')
 def object_detail(request, name):
     selected_object = Object.objects.get(id=name)
     full_name = selected_object.last_modify.first_name + ' ' + selected_object.last_modify.last_name
@@ -91,6 +95,8 @@ def object_detail(request, name):
     return render(request, 'main/templates/object_detail.html', context)
 
 
+@login_required(login_url='account:login')
+@is_staff
 def upload_xls(request):
     if request.method == 'POST':
         form = UploadXlsForm(request.POST, request.FILES)
@@ -107,6 +113,8 @@ def upload_xls(request):
     return render(request, "main/templates/upload.html", {'form': form})
 
 
+@login_required(login_url='account:login')
+@is_staff
 def upload_choice(request, object_id):
     if request.method == 'POST':
         form = UploadChoiceForm(request.POST)
@@ -127,6 +135,8 @@ def upload_choice(request, object_id):
     return render(request, "main/templates/upload_1.html", {'form': form, 'object_id': object_id})
 
 
+@login_required(login_url='account:login')
+@is_staff
 def import_data(request, choice, object_id):
     if request.method == 'POST':
         form = ImportForm(request.POST)
@@ -199,6 +209,7 @@ def import_data(request, choice, object_id):
     return render(request, "main/templates/import.html", {'form': form, 'choice': choice, 'object_id': object_id})
 
 
+@login_required(login_url='account:login')
 def structure(request):
     if request.GET:
         objectslist = Department.objects.filter(ceh__exact=request.GET['ceh'])
@@ -221,6 +232,8 @@ def structure(request):
     return render(request, "main/templates/structure.html", context)
 
 
+@login_required(login_url='account:login')
+@is_staff
 def create_uchastok(request):
     if request.method == 'POST':
         form1 = DepartmentForm(request.POST)
@@ -245,6 +258,8 @@ def create_uchastok(request):
     return render(request, "main/templates/uchastok_creation.html", context)
 
 
+@login_required(login_url='account:login')
+@is_staff
 def delete_uchastok(request, pk):
     try:
         obj = Department.objects.get(id=pk)
@@ -254,6 +269,8 @@ def delete_uchastok(request, pk):
         return HttpResponseNotFound("<h2>Not found</h2>")
 
 
+@login_required(login_url='account:login')
+@is_staff
 def change_uchastok(request, pk):
     obj = Employee.objects.get(id=pk)
     uch = obj.uchastok_instance.uchastok
@@ -276,6 +293,7 @@ def change_uchastok(request, pk):
     return render(request, "main/templates/change_uchastok.html", context)
 
 
+@login_required(login_url='account:login')
 def export_xls_department(request, ceh):
     response = HttpResponse(content_type='application/ms-excel')
     response['Content-Disposition'] = 'attachment; filename="dep.xlsx"'
@@ -321,16 +339,20 @@ def export_xls_department(request, ceh):
     return response
 
 
+@login_required(login_url='account:login')
 def rrl_line(request):
     objectslist = RrlLine.objects.all()
     context = {'objectlist': objectslist}
     return render(request, "main/templates/rrl.html", context)
 
 
+@login_required(login_url='account:login')
 def export_rrl(requst):
     pass
 
 
+@login_required(login_url='account:login')
+@is_staff
 def delete_rrl(request, pk):
     try:
         obj = RrlLine.objects.get(id=pk)
@@ -340,6 +362,8 @@ def delete_rrl(request, pk):
         return HttpResponseNotFound("<h2>Not found</h2>")
 
 
+@login_required(login_url='account:login')
+@is_staff
 def change_rrl(request, pk):
     obj = RrlLine.objects.get(id=pk)
     if request.method == 'POST':
@@ -361,10 +385,13 @@ def change_rrl(request, pk):
     return render(request, "main/templates/change_rrl.html", context)
 
 
+@login_required(login_url='account:login')
 def export_objects(request):
     pass
 
 
+@login_required(login_url='account:login')
+@is_staff
 def change_object(request, pk):
     try:
         Object.objects.get(id=pk)
@@ -394,6 +421,8 @@ def change_object(request, pk):
                                                                            'pos_form': pos_form, 'msg': msg})
 
 
+@login_required(login_url='account:login')
+@is_staff
 def delete_object(reqest, pk):
     try:
         obj = Object.objects.get(id=pk)
@@ -403,6 +432,8 @@ def delete_object(reqest, pk):
         return HttpResponseNotFound("<h2>Not found</h2>")
 
 
+@login_required(login_url='account:login')
+@is_staff
 def ozp_create(request):
     objects = Object.objects.all()
     if request.method == 'POST':
@@ -429,6 +460,7 @@ def ozp_create(request):
     return render(request, "main/templates/ozp_creation.html", context)
 
 
+@login_required(login_url='account:login')
 def ozp(request):
     # получение списков данных для меню выбора -------------------
     objectslist = Ozp.objects.all()
@@ -516,6 +548,10 @@ def ozp(request):
     # -------------------------------------------------------------------
         filtered_by = ' '.join([filtered_by_department, filtered_by_vipolnenie, filtered_by_na_vipolnenie,
                                 filtered_by_year, filtered_by_month])
+        if filtered_by != '    ':
+            pass
+        else:
+            filtered_by = ''
         context = {'objectlist': filtered_ozp_objects, 'ceh': ceh_list, 'uchastok': uchastok_list, 'year': year_list,
                    'filtered_by': filtered_by}
         return render(request, "main/templates/ozp.html", context)
@@ -545,6 +581,7 @@ def department_filter(ceh, uchastok):
 # --------------------------------------------------------------------------------------------
 
 
+@login_required(login_url='account:login')
 def ozp_details(request, ozp_id):
     ozp_object = Ozp.objects.get(id=ozp_id)
     foto_do = Foto_zamechanya.objects.filter(zamechanie=ozp_object)
@@ -553,6 +590,8 @@ def ozp_details(request, ozp_id):
     return render(request, "main/templates/ozp_details.html", context)
 
 
+@login_required(login_url='account:login')
+@is_staff
 def ozp_zamechanie_change(request, ozp_id):
     object = Ozp.objects.get(id=ozp_id)
     if request.method == 'POST':
@@ -562,6 +601,8 @@ def ozp_zamechanie_change(request, ozp_id):
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
+@login_required(login_url='account:login')
+@is_staff
 def ozp_normative_change(request, ozp_id):
     object = Ozp.objects.get(id=ozp_id)
     if request.method == 'POST':
@@ -571,6 +612,8 @@ def ozp_normative_change(request, ozp_id):
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
+@login_required(login_url='account:login')
+@is_staff
 def srok_ustranenia_change(request, ozp_id):
     object = Ozp.objects.get(id=ozp_id)
     if request.method == 'POST':
@@ -581,6 +624,8 @@ def srok_ustranenia_change(request, ozp_id):
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
+@login_required(login_url='account:login')
+@is_staff
 def control_srok_change(request, ozp_id):
     object = Ozp.objects.get(id=ozp_id)
     if request.method == 'POST':
@@ -591,6 +636,8 @@ def control_srok_change(request, ozp_id):
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
+@login_required(login_url='account:login')
+@is_staff
 def foto_zamechanie_add(request, ozp_id):
     object = Ozp.objects.get(id=ozp_id)
     if request.method == 'POST':
@@ -604,6 +651,8 @@ def foto_zamechanie_add(request, ozp_id):
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
+@login_required(login_url='account:login')
+@is_staff
 def foto_do_delete(request, f_id):
     x = Foto_zamechanya.objects.get(id=f_id)
     ozp_id = x.zamechanie.id
@@ -613,6 +662,8 @@ def foto_do_delete(request, f_id):
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
+@login_required(login_url='account:login')
+@is_staff
 def posle_foto_delete(request, f_id):
     x = Foto_vipolnenya.objects.get(id=f_id)
     ozp_id = x.zamechanie.id
@@ -622,6 +673,7 @@ def posle_foto_delete(request, f_id):
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
+@login_required(login_url='account:login')
 def foto_vipolnenie_add(request, ozp_id):
     object = Ozp.objects.get(id=ozp_id)
     if request.method == 'POST':
@@ -635,6 +687,8 @@ def foto_vipolnenie_add(request, ozp_id):
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
+@login_required(login_url='account:login')
+@is_staff
 def accept(request, ozp_id):
     object = Ozp.objects.get(id=ozp_id)
     object.is_done = True
@@ -642,6 +696,7 @@ def accept(request, ozp_id):
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
+@login_required(login_url='account:login')
 def podano_na_vipolnenie(request, ozp_id):
     object = Ozp.objects.get(id=ozp_id)
     if request.method == 'POST':
@@ -681,6 +736,8 @@ def podano_na_vipolnenie(request, ozp_id):
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
+@login_required(login_url='account:login')
+@is_staff
 def not_accept(request, ozp_id):
     obj = Ozp.objects.get(id=ozp_id)
     y = Podano_na_vipolnenie.objects.get(zamechanie=obj)
@@ -696,6 +753,7 @@ def not_accept(request, ozp_id):
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
+@login_required(login_url='account:login')
 def export_xls_ozp(request):
     if request.method == 'GET':
         try:

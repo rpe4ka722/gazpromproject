@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'account.apps.AccountConfig',
     'ams.apps.AmsConfig',
     'main.apps.MainConfig',
+    'rich.apps.RichConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -144,3 +145,5 @@ USE_I18N = True
 USE_L10N = False
 
 USE_TZ = False
+
+

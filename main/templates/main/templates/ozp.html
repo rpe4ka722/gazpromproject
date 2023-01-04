@@ -14,7 +14,7 @@
         </span>
         <div id="filter-button">
             <span>
-                {% if filtered_by == 'all' %} Фильтрация отсутствует.
+                {% if filtered_by == '' %} Фильтрация отсутствует.
                 {% else %} Объекты отфильтрованы по: {{ filtered_by }}</span>
                 {% endif %}
             <button type="submit" form="filter_reset" value="Сбросить" >Сбросить</button>

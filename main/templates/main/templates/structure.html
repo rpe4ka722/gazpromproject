@@ -49,8 +49,8 @@
                     <th>Цех</th>
                     <th>Участок</th>
                     <th>Начальник участка</th>
-                    <th></th>
-                    <th></th>
+                    <th>Изменить</th>
+                    <th>Удалить</th>
                 </tr>
                 <tr>
             {% if objectlist %}
@@ -61,13 +61,17 @@
                         <td>{{ i.employee.employee_name }} {{ i.employee.employee_last_name }}</td>
                         <td align="center">
                             <form action="{% url 'main:change_uchastok' i.employee.pk %}">
-                            <button>Изменить</button>
+                            <button>
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
                             </form>
                         </td>
                         <td align="center">
                             <form method="post" action="{% url 'main:delete_uchastok' i.pk %}">
                                 {% csrf_token %}
-                                <button type="submit">Удалить</button>
+                                <button type="submit">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
                             </form>
                         </td>
                     </tr>
