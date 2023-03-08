@@ -551,14 +551,15 @@ table td {
 
 .change_form_ozp {
     position: fixed;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 30vh;
-    left: 0;
-    right: 0;
+    align-self:center;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
     min-height: 10%;
-    max-width: 30%;
-    min-width: 10%;
+    max-width: 70%;
+    min-width: 30%;
     z-index: 1;
     display:none;
     background-color: darkgrey;
@@ -617,4 +618,96 @@ table td {
 
 .alert {
     color: red;
+}
+
+#change_name_input {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+#rich_add {
+    padding-top: 0;
+    display: none;
+}
+
+#rich_buttons {
+    margin-bottom: 10px;
+    margin-left: 13px;
+}
+
+.rich_input_class {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+#rich_select_form {
+    padding-bottom: 0;
+}
+
+.rich_add_form input {
+    margin-bottom: 5px;
+    margin-top: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+#registration_add {
+    padding-top: 0;
+    display: none;
+}
+
+#registration_buttons {
+    margin-bottom: 10px;
+    margin-left: 13px;
+}
+
+#radio_class_input {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+#radio_class_buttons {
+    margin-bottom: 10px;
+    margin-left: 13px;
+}
+
+
+#res_button {
+    background-image: url("../img/res1.jpg");
+    background-size: cover;
+}
+
+#rich_button {
+    background-image: url("../img/rich12.jpg");
+    background-size: cover;
+}
+
+#registration_button {
+    background-image: url("../img/reg4.jpg");
+    background-size: cover;
+}
+
+.delete_form input {
+    margin-bottom: 5px;
+    margin-top: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.creation_form {
+    display: block;
+}
+
+#equipment_add_form {
+    padding-top: 0;
+    display: none;
+}
+
+#change_equip {
 }

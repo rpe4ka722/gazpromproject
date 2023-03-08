@@ -131,12 +131,12 @@ MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-DATE_FORMAT = ( ( 'd.m.Y' ))
-DATE_INPUT_FORMATS = ( ('%d.%m.%Y'),)
-DATETIME_FORMAT = (( 'd.m.Y H:i' ))
-DATETIME_INPUT_FORMATS = (('%d.%m.%Y %H:%i'),)
+DATE_FORMAT = 'd.m.Y'
+DATE_INPUT_FORMATS = ('%d-%m-%Y', '%Y-%m-%d')
+DATETIME_FORMAT = 'd.m.Y H:i'
+DATETIME_INPUT_FORMATS = '%d.%m.%Y %H:%i'
 
-LANGUAGE_CODE = 'ru-ru'
+LANGUAGE_CODE = 'ru-RU'
 
 TIME_ZONE = 'Asia/Kolkata'
 
@@ -144,6 +144,5 @@ USE_I18N = True
 
 USE_L10N = False
 
-USE_TZ = False
-
+USE_TZ = True
 

@@ -55,3 +55,10 @@ def is_staff(view_func):
             form = LoginForm
             return render(request, 'account/templates/login.html', {'form': form, 'msg': msg})
     return decorator
+
+
+def form_errors_text(form):
+    error_list = []
+    for field in form:
+        error_list.append(field.errors.as_text().replace('* ', ''))
+    return ' '.join(error_list).strip()

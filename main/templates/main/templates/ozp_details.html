@@ -204,7 +204,7 @@
                 {% csrf_token %}
                 Опишите замечание:
                 <br>
-                <textarea name="text_zamechanya" id="text_zamechanya" maxlength="500">
+                <textarea name="text_zamechanya" id="text_zamechanya" maxlength="500"  onclick="this.setSelectionRange(0,0);">
                 </textarea>
                 <br>
                 <input type="submit" value="Изменить">
@@ -218,7 +218,7 @@
                 {% csrf_token %}
                 Ссылка на нормативную документацию:
                 <br>
-                <textarea name="text_normative" id="text_normative" maxlength="500">
+                <textarea name="text_normative" id="text_normative" maxlength="500"  onclick="this.setSelectionRange(0,0);">
                 </textarea>
                 <br>
                 <input type="submit" value="Изменить">
@@ -297,7 +297,7 @@
                 <input type="file" name="foto" id="foto">
                 <br>
                 Напишите комментарий:
-                <textarea name="comment" id="comment" maxlength="500">
+                <textarea name="comment" id="comment" maxlength="500"  onclick="this.setSelectionRange(0,0);">
                 </textarea>
                 <input type="submit" value="Выполнить">
                 <button onmousedown="showhide_changeform('vipolnenie')" class="close_button">
@@ -310,7 +310,7 @@
                 {% csrf_token %}
                 Замечание не принято!
                 Напишите комментарий:
-                <textarea name="comment" id="comment" maxlength="500">
+                <textarea name="comment" id="comment" maxlength="500"  onclick="this.setSelectionRange(0,0);">
                 </textarea>
                 <input type="submit" value="Отклонить">
             </form>
