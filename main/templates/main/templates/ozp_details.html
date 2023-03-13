@@ -197,6 +197,14 @@
                     <td><h3>Изменения внес</h3></td>
                     <td colspan="2">{{ i.last_modify.first_name }} {{ i.last_modify.last_name }} {{ i.time_modify }}</td>
                 </tr>
+                <tr>
+                    <td colspan="2"><h3>Удалить запись</h3></td>
+                    <td align="center">
+                        <button onmousedown="showhide_changeform('delete_ozp_{{ i.id }}')" class="close_button">
+                                    <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
             </table>
         </div>
         <div id="change_zamechanie" class="change_form_ozp">
@@ -313,6 +321,18 @@
                 <textarea name="comment" id="comment" maxlength="500"  onclick="this.setSelectionRange(0,0);">
                 </textarea>
                 <input type="submit" value="Отклонить">
+            </form>
+        </div>
+        <!-------------------------------------------------------------------->
+        <div id="delete_ozp_{{ i.id }}" class="change_form_ozp">
+            <form method="post" action="{% url 'main:delete_ozp' i.id %}">
+                {% csrf_token %}
+                Вы действительно хотите удалить запись???
+                <br><br>
+                <input type="submit" value="Удалить">
+                <button onmousedown="showhide_changeform('delete_ozp_{{ i.id }}')" class="close_button">
+                <i class="fa-solid fa-xmark"></i>
+                </button>
             </form>
         </div>
     </div>

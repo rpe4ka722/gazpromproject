@@ -1,0 +1,21 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Создание записи РИЧ в базе данных{% endblock %}
+{% block content %}
+<div class="creation_form">
+    <div>
+        <h2>Для создания РИЧ заполните представленную форму:</h2>
+    </div>
+    <div>
+        <form action="{% url 'rich:rich_create' %}" method="post" enctype="multipart/form-data">
+            <div>
+                {% csrf_token %}
+                {{ form.as_p }}
+            </div>
+            <div class="account-button">
+                <input type="submit" value="Создать объект">
+            </div>
+        </form>
+    </div>
+    <div>{{ msg }}</div>
+</div>
+{% endblock %}

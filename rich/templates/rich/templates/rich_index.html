@@ -1,0 +1,205 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Список объектов{% endblock %}
+{% block content %}
+    <div class="button-bar">
+        <span>
+            <form action="{% url 'rich:res_create' %}">
+                <button type="submit" value="Создать">Создать запись</button>
+            </form>
+        </span>
+        <span>
+            <a href="{% url 'rich:res_export_xls' %}?{{ request.GET.urlencode }}">
+                <button type="submit">Выгрузить</button>
+            </a>
+        </span>
+        <div id="filter-button">
+            <span>
+                {% if filtered_by == '' %} Фильтрация отсутствует.
+                {% else %} Объекты отфильтрованы по: {{ filtered_by }}</span>
+                {% endif %}
+            <button type="submit" form="filter_reset" value="Сбросить" >Сбросить</button>
+            <input type="button" value="Фильтр" onmousedown="showhide('filter')" id="filter-button-dynamic">
+            <form id="filter_reset">
+                <a href={% url 'rich:rich_index' %}></a>
+            </form>
+        </div>
+    </div>
+    <div id="filter">
+            <div class="filter-content">
+                <form id="filter_form" method="get" action={% url 'rich:rich_index' %}>
+                    <span>Фильтровать по цеху:</span>
+                    <p>
+                        <select name="ceh" form="filter_form">
+                            <option value="all">Все</option>
+                            {% for i in ceh %}
+                                <option value="{{ i }}">{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                    <span>Фильтровать по участку:</span>
+                    <p>
+                        <select name="uchastok" form="filter_form">
+                            <option value="all">Все</option>
+                            {% for i in uchastok %}
+                               <option value="{{ i }}">{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                    <span>Фильтровать по объекту:</span>
+                    <p>
+                        <select name="object" form="filter_form" >
+                            <option value="all" selected>Все</option>
+                            {% for i in objects %}
+                               <option value="{{ i }}">{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                    <span>Фильтровать по дейструющим:</span>
+                    <p>
+                        <select name="is_active" form="filter_form">
+                            <option value="all">Показать все</option>
+                            <option value="1">Показать только действующие</option>
+                            <option value="0">Показать только проектируемые</option>
+                        </select>
+                    </p>
+                    <span>Фильтровать типу РЭС:</span>
+                    <p>
+                        <select name="type_res" form="filter_form">
+                            <option value="all">Показать все</option>
+                            {% for i in type_list %}
+                               <option value="{{ i.class_name }}">{{ i.class_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                    <span>Фильтровать по наименованию оборудования:</span>
+                    <p>
+                        <select name="equip_name" form="filter_form">
+                            <option value="all">Показать все</option>
+                            {% for i in type_list %}
+                               <option value="{{ i }}">{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                    <span>Фильтровать по диапазону:</span>
+                    <p>
+                        <select name="frequency_range" form="filter_form">
+                            <option value="all">Показать все</option>
+                            {% for i in type_list %}
+                               <option value="{{ i.frequency_str }}">{{ i.frequency_str }}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                </form>
+            </div>
+            <div id="filter-button-bar">
+                <button type="submit" form="filter_form" value="Применить">Применить</button>
+            </div>
+    </div>
+    <div class="content">
+        <!-------------------------------------------------------------------->
+        {% for i in object %}
+        <div id="delete_res_{{ i.id }}" class="change_form_ozp">
+            <form method="post" action="{% url 'rich:delete_res' i.id %}">
+                {% csrf_token %}
+                Вы действительно хотите удалить запись???
+                <br><br>
+                <input type="submit" value="Удалить">
+                <button onmousedown="showhide_changeform('delete_res_{{ i.id }}')" class="close_button">
+                <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+        <!-------------------------------------------------------------------->
+        <div class="table">
+            <table>
+                <tr class="head_row">
+                    <th>РЭС</th>
+                    <th>Тип РЭС</th>
+                    <th>Оборудование</th>
+                    <th>Объект</th>
+                    <th>РИЧ</th>
+                    <th>Срок действия РИЧ</th>
+                    <th>Свидетельство</th>
+                    <th>Срок действия регистрации</th>
+                    <th>Протокол</th>
+                    <th>В работе</th>
+                    <th>Удалить</th>
+                </tr>
+                {% if object %}
+                    {% for i in object %}
+                        <tr class="table_row">
+                            <td align="center">
+                                <a href="{{ i.get_absolute_url }}">
+                                {{ i }}
+                                </a>
+                            </td>
+                            <td>
+                                {% if i.type %}
+                                    {{ i.type.class_name }}
+                                {% else %}
+                                    Не выбрано
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if i.type %}
+                                    {{ i.type }}
+                                {% else %}
+                                    Не выбран
+                                {% endif %}
+                            </td>
+                            <td>{{ i.related_object }}</td>
+                            <td align="center">
+                                {% if i.related_rich %}
+                                    <a href="{{ i.related_rich.doc.url }}">
+                                        <i class="fa-regular fa-file-lines"></i>
+                                    </a>
+                                {% else %}
+                                    РИЧ не присвоен
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if i.related_rich %}
+                                    {{ i.related_rich.days_left }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td align="center">
+                                {% if i.related_registration %}
+                                    <a href="{{ i.related_registration.doc.url }}">
+                                        <i class="fa-regular fa-file-lines"></i>
+                                    </a>
+                                {% else %}
+                                    РЭС не зарегистрирован
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if i.related_registration %}
+                                    {{ i.related_registration.days_left }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td align="center">
+                                {% if i.protokol.all %}
+                                    <a href="{% url 'rich:protokol_list' i.id %}"><i class="fa-solid fa-folder-open"></i></a>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>{{ i.active_status }}</td>
+                            <td align="center">
+                                <button onmousedown="showhide_changeform('delete_res_{{ i.id }}')" class="close_button">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <p>Замечания отсутствуют</p>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+{% endblock %}

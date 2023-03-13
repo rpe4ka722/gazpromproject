@@ -1,5 +1,8 @@
 from datetime import datetime, timedelta
 
+from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
+
 from main.scripts import is_staff
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -7,9 +10,8 @@ from django.http import HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
-from .forms import ObjectForm, RrlForm, PositionForm, UploadXlsForm, UploadChoiceForm, ImportForm, DepartmentForm, \
-    EmployeeForm
-from .models import Object, Position, RrlLine, Sheet, Header, UploadedData, Choice, Department, Employee, Ozp, \
+from .forms import ObjectForm, RrlForm, PositionForm, UploadXlsForm, UploadChoiceForm, ImportForm, DepartmentForm
+from .models import Object, Position, RrlLine, Sheet, Header, UploadedData, Choice, Department, Ozp, \
     Foto_zamechanya, Foto_vipolnenya, Podano_na_vipolnenie
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Border, Side, Alignment, Font
@@ -212,13 +214,14 @@ def import_data(request, choice, object_id):
 @login_required(login_url='account:login')
 def structure(request):
     if request.GET:
-        objectslist = Department.objects.filter(ceh__exact=request.GET['ceh'])
+        objectslist = User.objects.all()
+        print(objectslist)
         if request.GET['ceh'] == '':
             filtered_by = 'Отсутствует'
         else:
             filtered_by = request.GET['ceh']
     else:
-        objectslist = Department.objects.all()
+        objectslist = User.objects.all()
         filtered_by = 'all'
     ceh_list = []
     for i in Department.objects.all():
@@ -227,8 +230,7 @@ def structure(request):
         else:
             ceh_list.append(i.ceh)
 
-    employee = Employee.objects.all()
-    context = {'objectlist': objectslist, 'employee': employee, 'ceh': ceh_list, 'filtered_by': filtered_by}
+    context = {'objectlist': objectslist, 'ceh': ceh_list, 'filtered_by': filtered_by}
     return render(request, "main/templates/structure.html", context)
 
 
@@ -876,4 +878,14 @@ def export_xls_ozp(request):
         wb.save(response)
         return response
 
+
+@login_required(login_url='account:login')
+@is_staff
+def delete_ozp(request, ozp_id):
+    try:
+        ozp_object = Ozp.objects.get(id=ozp_id)
+        ozp_object.delete()
+        return redirect('main:ozp')
+    except ObjectDoesNotExist:
+        return redirect('main:ozp')
 

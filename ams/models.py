@@ -1,5 +1,5 @@
 from django.db import models
-from main.models import Object, Employee
+from main.models import Object
 from django.contrib.auth.models import User
 
 
@@ -27,7 +27,6 @@ class Inventory(models.Model):
     inventory_number = models.IntegerField()
     inventory_name = models.CharField(max_length=50)
     description = models.TextField(max_length=500)
-    mol = models.ForeignKey(Employee, on_delete=models.CASCADE)
 
 
 class Diagnostic(models.Model):

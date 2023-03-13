@@ -1,5 +1,5 @@
 from django.forms import ModelForm
-from .models import Object, RrlLine, Position, UploadedData, Choice, Department, Employee, Ozp
+from .models import Object, RrlLine, Position, UploadedData, Choice, Department
 
 
 class ObjectForm(ModelForm):
@@ -44,11 +44,6 @@ class DepartmentForm(ModelForm):
         model = Department
         fields = ['ceh', 'uchastok']
 
-
-class EmployeeForm(ModelForm):
-    class Meta:
-        model = Employee
-        fields = ['employee_name', 'employee_last_name']
 
 
 

@@ -38,5 +38,6 @@ urlpatterns = [
     path('accept/<int:ozp_id>/', views.accept, name='accept'),
     path('podano_na_vipolnenie/<int:ozp_id>/', views.podano_na_vipolnenie, name='podano_na_vipolnenie'),
     path('not_accept/<int:ozp_id>/', views.not_accept, name='not_accept'),
-    path('export_xls_ozp/', views.export_xls_ozp, name='export_xls_ozp')
+    path('export_xls_ozp/', views.export_xls_ozp, name='export_xls_ozp'),
+    path('delete_ozp/<int:ozp_id>', views.delete_ozp, name='delete_ozp')
     ]

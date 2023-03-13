@@ -1,0 +1,57 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Список объектов{% endblock %}
+{% block content %}
+    <div class="button-bar">
+        <span>
+            <a href="{% url 'rich:rich_index' %}">
+                <button type="submit" value="Назад">Назад</button>
+            </a>
+        </span>
+    </div>
+    <div class="content">
+        <!-------------------------------------------------------------------->
+        {% for i in list %}
+        <div id="protokol_delete_{{ i.id }}" class="change_form_ozp">
+            <form method="post" action="{% url 'rich:protokol_delete' i.id %}">
+                {% csrf_token %}
+                Вы действительно хотите удалить запись???
+                <br><br>
+                <input type="submit" value="Удалить">
+                <button onmousedown="showhide_changeform('protokol_delete_{{ i.id }}')" class="close_button">
+                <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+        <!-------------------------------------------------------------------->
+        <div class="table">
+            <div>
+                Протоколы измерений параметров РЭС {{ res.name }}
+            </div>
+            <table>
+                <tr class="head_row">
+                    <th>Документ</th>
+                    <th>Удалить</th>
+                </tr>
+                {% if list %}
+                    {% for i in list %}
+                        <tr class="table_row">
+                            <td>
+                                <a href="{{ i.doc.url }}">
+                                    {{ i.name }}
+                                </a>
+                            </td>
+                            <td align="center">
+                                <button onmousedown="showhide_changeform('protokol_delete_{{ i.id }}')" class="close_button">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <p>Записи отсутствуют</p>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+{% endblock %}

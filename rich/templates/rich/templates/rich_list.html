@@ -1,0 +1,135 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Список объектов{% endblock %}
+{% block content %}
+    <div class="button-bar">
+        <span>
+            <form action="{% url 'rich:rich_create' %}">
+                <button type="submit" value="Создать">Создать запись</button>
+            </form>
+        </span>
+        <span>
+            <a href="{% url 'rich:export_xls_rich' %}?{{ request.GET.urlencode }}">
+                <button type="submit">Выгрузить</button>
+            </a>
+        </span>
+        <div id="filter-button">
+            <span>
+                {% if filtered_by == '' %} Фильтрация отсутствует.
+                {% else %} Объекты отфильтрованы по: {{ filtered_by }}</span>
+                {% endif %}
+            <button type="submit" form="filter_reset" value="Сбросить" >Сбросить</button>
+            <input type="button" value="Фильтр" onmousedown="showhide('filter')" id="filter-button-dynamic">
+            <form id="filter_reset">
+                <a href={% url 'rich:rich_index' %}>
+                </a>
+            </form>
+        </div>
+    </div>
+    <div id="filter">
+            <div class="filter-content">
+                <form id="filter_form" method="get" action={% url 'rich:rich_list' %}>
+                    <span>Фильтровать по цеху:</span>
+                    <p>
+                        <select name="ceh" form="filter_form">
+                            <option value="all">Все</option>
+                            {% for i in ceh %}
+                                <option value="{{ i }}">{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                    <span>Фильтровать по участку:</span>
+                    <p>
+                        <select name="uchastok" form="filter_form">
+                            <option value="all">Все</option>
+                            {% for i in uchastok %}
+                               <option value="{{ i }}">{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                    <span>Фильтровать по объекту:</span>
+                    <p>
+                        <select name="object" form="filter_form">
+                            <option value="all" selected>Все</option>
+                            {% for i in objects %}
+                               <option value="{{ i }}">{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                    <span>Фильтровать по действующим:</span>
+                    <p>
+                        <select name="is_active" form="filter_form">
+                            <option value="all" selected>Показать все</option>
+                            <option value="1">Показать только действующие</option>
+                            <option value="0">Показать только недействительные</option>
+                        </select>
+                    </p>
+                    <span>Показать РИЧ со сроком окончания в текущем году:</span>
+                    <p>
+                        <select name="srok_this_year" form="filter_form">
+                            <option value="all">Показать все</option>
+                            <option value="1">Показать РИЧ со сроком действия менее года</option>
+                        </select>
+                    </p>
+                </form>
+            </div>
+            <div id="filter-button-bar">
+                <button type="submit" form="filter_form" value="Применить">Применить</button>
+            </div>
+    </div>
+    <div class="content">
+        <!-------------------------------------------------------------------->
+        {% for i in object %}
+        <div id="delete_rich_{{ i.id }}" class="change_form_ozp">
+            <form method="post" action="{% url 'rich:delete_rich' i.id %}">
+                {% csrf_token %}
+                Вы действительно хотите удалить запись???
+                <br><br>
+                <input type="submit" value="Удалить">
+                <button onmousedown="showhide_changeform('delete_rich_{{ i.id }}')" class="close_button">
+                <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+        <!-------------------------------------------------------------------->
+        <div class="table">
+            <table>
+                <tr class="head_row">
+                    <th>РИЧ</th>
+                    <th>Дата начала действия РИЧ</th>
+                    <th>Дата окончания РИЧ</th>
+                    <th>Срок действия РИЧ</th>
+                    <th>Перечень РЭС</th>
+                    <th>Удалить</th>
+                </tr>
+                {% if object %}
+                    {% for i in object %}
+                        <tr class="table_row">
+                            <td align="center">
+                                <a href="{{ i.doc.url }}" class="ozp-link">
+                                {{ i.name }}
+                                </a>
+                            </td>
+                            <td>{{ i.start_date}}</td>
+                            <td>{{ i.end_date }}</td>
+                            <td>{{ i.days_left }}</td>
+                            <td>
+                                {% for x in i.related_res.all %}
+                                    <a href="{{ x.get_absolute_url }}">{{ x.name }},</a>
+                                {% endfor %}
+                            </td>
+                            <td align="center">
+                                <button onmousedown="showhide_changeform('delete_rich_{{ i.id }}')" class="close_button">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                {% else %}
+                    <p>Записи отсутствуют</p>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Создание регистрации в базе данных{% endblock %}
+{% block content %}
+    <div class="creation_form">
+        <h2>Для создания заполните представленную форму:</h2><p>
+        <form method="post" id="regForm" res-url="{% url 'rich:ajax_load_res' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+              {{ form.as_p }}
+            <button type="submit">Создать</button>
+        </form>
+
+          <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+          <script>
+            $("#id_related_object").change(function () {
+              var url = $("#regForm").attr("res-url");  // get the url of the `load_res` view
+              var objectId = $(this).val();  // get the selected country ID from the HTML input
+
+              $.ajax({                       // initialize an AJAX request
+                url: url,                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+                data: {
+                  'related_object': objectId       // add the country id to the GET parameters
+                },
+                success: function (data) {   // `data` is the return of the `load_cities` view function
+                  $("#id_related_res").html(data);  // replace the contents of the city input with the data that came from the server
+                }
+              });
+            });
+          </script>
+        <p>{{ msg }}</p>
+    </div>
+{% endblock %}

@@ -1,0 +1,394 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}{{ object }}{% endblock %}
+{% block content %}
+    <div class="button-bar">
+        <span>
+            <form action="{% url 'rich:rich_index' %}">
+                <button type="submit" value="К списку">К списку</button>
+            </form>
+        </span>
+        <span id="msg">{{ msg }}</span>
+    </div>
+    <div class="content">
+        <div class="table">
+            <table>
+                <tr>
+                    <td><h3>Наименование РЭС</h3></td>
+                    <td>
+                        {{ object.name }}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_name')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><h3>Наименование оборудования</h3></td>
+                    <td>
+                        {% if object.type %}
+                            {{ object.type }}
+                        {% else %}
+                            Не указано
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_equip')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><h3>Объект</h3></td>
+                    <td>{{ object.related_object }}</td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_object')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><h3>РИЧ</h3></td>
+                    <td>
+                        {% if object.related_rich %}
+                            <a href="{{ object.related_rich.doc.url }}" target="_blank">{{ object.related_rich.name }}.</a>
+                            <br>
+                            Действительно с {{ object.related_rich.start_date }} по {{ object.related_rich.end_date }}.
+                        {% else %}
+                            Разрешение на использование радиочастот для данного РЭС отсутствует.
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_rich')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><h3>Регистрация РЭС</h3></td>
+                    <td>
+                        {% if object.related_registration %}
+                            <a href="{{ object.related_registration.doc.url }}" target="_blank">{{ object.related_registration }}.</a>
+                            <br>
+                            Действительна с {{ object.related_registration.start_date }} по {{ object.related_registration.end_date }}.
+                        {% else %}
+                            РЭС не зарегистрирован
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_registration')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><h3>Класс излучения</h3></td>
+                    <td>
+                        {% if object.radio_class %}
+                            {{ object.radio_class }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('radio_class')" class="change_button">
+                             <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><h3>Высота подвеса антенны</h3></td>
+                    <td>
+                        {% if object.antenna_height %}
+                            {{ object.antenna_height }} м
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td align="center">
+                        <button onmousedown="showhide_changeform('antenna_height')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><h3>Азимут антенны</h3></td>
+                    <td>
+                        {% if object.azimuth_value %}
+                            {{ object.azimuth_value }} °
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td align="center">
+                        <button onmousedown="showhide_changeform('antenna_azimuth')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><h3>Коэффициент усиления антенны</h3></td>
+                    <td>
+                        {% if object.antenna_gain %}
+                            {{ object.antenna_gain }} dB
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td align="center">
+                        <button onmousedown="showhide_changeform('antenna_gain')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><h3>Поляризация</h3></td>
+                    <td>
+                        {% if object.polarization %}
+                            {{ object.polarization }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td align="center">
+                        <button onmousedown="showhide_changeform('polarization')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><h3>Протоколы измерений</h3></td>
+                    <td>
+                        {% if object.protokol.all %}
+                            {% for i in object.protokol.all %}
+                                <a href="{{ i.doc.url }}">
+                                    {{ i.name }}<br>
+                                </a>
+                            {% endfor %}
+                        {% else %}
+                            Отсутствуют
+                        {% endif %}
+                    </td>
+                    <td align="center">
+                        <button onmousedown="showhide_changeform('protokol')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><h3>Статус РЭС</h3></td>
+                    <td colspan="2">
+                        {% if object.is_active == True %}
+                            Действущее
+                        {% else %}
+                            Проектируемое
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+    <!---------------------------buttons----------------------------------------->
+        <div id="change_name" class="change_form_ozp">
+            <form method="post" action="{% url 'rich:change_name' object.id %}" id="text_zamechanya">
+                {% csrf_token %}
+                Введите новое имя:
+                <br>
+                <input type="text" id="change_name_input" name="name" required maxlength="20" size="25">
+                <br>
+                <input type="submit" value="Изменить">
+                <button onmousedown="showhide_changeform('change_name')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+    <!-------------------------------------------------------------------->
+        <div id="change_object" class="change_form_ozp">
+            <form method="post" action="{% url 'rich:change_object' object.id %}">
+                {% csrf_token %}
+                Выберите объект на котором установлено РЭС:
+                <br>
+                <select name="select_object" id="change_name_input">
+                    {% for i in related_object %}
+                    <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                </select>
+                <br>
+                <input type="submit" value="Изменить">
+                <button onmousedown="showhide_changeform('change_object')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+    <!-------------------------------------------------------------------->
+        <div id="change_rich" class="change_form_ozp">
+            <form method="post" action="{% url 'rich:change_rich' object.id %}" id="rich_select_form">
+                {% csrf_token %}
+                Выберите РИЧ для данного РЭС:
+                <br>
+                <select name="select_rich" id="select_rich" onchange="richFunction()" class="rich_input_class">
+                    <option value="" selected></option>
+                    {% for i in related_rich %}
+                    <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                    <option value="Добавить">Добавить новое разрешение</option>
+                </select>
+            </form>
+            <form id="rich_add" method="post" action="{% url 'rich:add_rich' object.id %}" enctype="multipart/form-data" class="rich_add_form">
+                {% csrf_token %}
+                {{ rich_form.as_p }}
+            </form>
+            <div id="rich_buttons">
+                <input type="submit" value="Изменить" id="select_rich_button" form="rich_select_form">
+                <button onmousedown="showhide_changeform('change_rich')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+    <!-------------------------------------------------------------------->
+        <div id="change_registration" class="change_form_ozp">
+            <form method="post" action="{% url  'rich:change_registration' object.id %}" id="registration_select_form">
+                {% csrf_token %}
+                Выберите свидетельство регистрации для данного РЭС:
+                <br>
+                <select name="select_registration" id="select_registration" onchange="regFunction()" class="rich_input_class">
+                    <option value="" selected></option>
+                    {% for i in related_registration %}
+                    <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                    <option value="Добавить">Добавить новое свидетельство</option>
+                </select>
+            </form>
+            <form id="registration_add" method="post" action="{% url 'rich:add_registration' object.id %}" enctype="multipart/form-data" class="rich_add_form">
+                {% csrf_token %}
+                {{ registration_form.as_p }}
+            </form>
+            <div id="registration_buttons">
+                <input type="submit" value="Изменить" id="select_registration_button" form="registration_select_form">
+                <button onmousedown="showhide_changeform('change_registration')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+    <!-------------------------------------------------------------------->
+        <div id="radio_class" class="change_form_ozp">
+            <form method="post" action="{% url 'rich:change_radio_class' object.id %}" class="rich_add_form" id="radio_class_form">
+                {% csrf_token %}
+                Укажите класс излучения:
+                <br>
+                <input type="text" id="change_class_input" name="radio_class" maxlength="20" size="25">
+                <br>
+            </form>
+            <div id="radio_class_buttons">
+                <input type="submit" value="Изменить" form="radio_class_form">
+                <button onmousedown="showhide_changeform('radio_class')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+    <!-------------------------------------------------------------------->
+        <div id="antenna_height" class="change_form_ozp">
+            <form method="post" action="{% url 'rich:antenna_height_change' object.id %}">
+                {% csrf_token %}
+                Укажите высоту подвеса антенны:
+                <br>
+                <input type="number" name="antenna_heigh" min="0" max="150">
+                <br>
+                <br>
+                <input type="submit" value="Изменить">
+                <button onmousedown="showhide_changeform('antenna_height')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+    <!-------------------------------------------------------------------->
+        <div id="antenna_azimuth" class="change_form_ozp">
+            <form method="post" action="{% url 'rich:antenna_azimuth_change' object.id %}">
+                {% csrf_token %}
+                Укажите азимут антенны:
+                <br>
+                <input type="number" name="antenna_azimuth" min="0" max="360">
+                <br>
+                <br>
+                <input type="submit" value="Изменить">
+                <button onmousedown="showhide_changeform('antenna_azimuth')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+    <!-------------------------------------------------------------------->
+        <div id="antenna_gain" class="change_form_ozp">
+            <form method="post" action="{% url 'rich:antenna_gain_change' object.id %}">
+                {% csrf_token %}
+                Укажите усиление антенны:
+                <br>
+                <input type="number" name="antenna_gain" min="0" max="60">
+                <br>
+                <br>
+                <input type="submit" value="Изменить">
+                <button onmousedown="showhide_changeform('antenna_gain')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+    <!-------------------------------------------------------------------->
+        <div id="polarization" class="change_form_ozp">
+            <form method="post" action="{% url 'rich:antenna_polarization_change' object.id %}">
+                {% csrf_token %}
+                Укажите поляризацию:
+                <br>
+                <select name="polarization" class="rich_input_class">
+                    <option value="" selected>Выберите поляризацию</option>
+                    <option value="Вертикальная">Вертикальная</option>
+                    <option value="Горизонтальная">Горизонтальная</option>
+                    <option value="Круговая">Круговая</option>
+                </select>
+                <br>
+                <br>
+                <input type="submit" value="Выбрать">
+                <button onmousedown="showhide_changeform('polarization')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <!-------------------------------------------------------------------->
+        <div id="change_equip" class="change_form_ozp">
+            <form method="post" action="{% url 'rich:change_equipment' object.id %}" id="equipment_select_form">
+                {% csrf_token %}
+                Выберите применяемое оборудование:
+                <br>
+                <select name="select_equipment" id="select_equipment" onchange="equipFunction()" class="rich_input_class">
+                    <option value="" selected></option>
+                    {% for i in type %}
+                    <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                    <option value="Добавить">Добавить новый тип оборудования</option>
+                </select>
+            </form>
+            <form id="equipment_add_form" method="post" action="{% url 'rich:add_equipment' object.id %}" enctype="multipart/form-data" class="rich_add_form">
+                {% csrf_token %}
+                {{ type_form.as_p }}
+            </form>
+            <div id="registration_buttons">
+                <input type="submit" value="Изменить" id="equipment_select_button" form="equipment_select_form">
+                <button onmousedown="showhide_changeform('change_equip')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+        <!-------------------------------------------------------------------->
+        <div id="protokol" class="change_form_ozp">
+            <form method="post" action="{% url 'rich:add_res_protokol' object.id %}" enctype="multipart/form-data">
+                Добавить протокол измерений РЭС:
+                <br>
+                {% csrf_token %}
+                {{ protokol_form.as_p }}
+                <br>
+                <input type="submit" value="Добавить">
+                <button onmousedown="showhide_changeform('protokol')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <!-------------------------------------------------------------------->
+    </div>
+{% endblock %}

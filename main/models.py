@@ -87,13 +87,15 @@ class Department(models.Model):
         ('Участок связи №18', 'Участок связи №18'),
         ('Участок связи №19', 'Участок связи №19'),
         ('Участок связи №20', 'Участок связи №20'),
+        ('Администрация', 'Администрация')
     ]
 
     CEH_CHOICES = [
         ('Ноябрьский цех связи', 'НЦС'),
         ('Сургутский цех связи', 'СЦС'),
         ('Тюменский цех связи', 'ТЦС'),
-        ('', '')
+        ('', ''),
+        ('Администрация', 'Администрация')
     ]
 
     uchastok = models.CharField(max_length=50, choices=UCHASTOK_CHOICES, verbose_name='участок связи')
@@ -104,15 +106,6 @@ class Department(models.Model):
 
     def __str__(self):
         return self.uchastok
-
-
-class Employee(models.Model):
-    employee_name = models.CharField(max_length=30,  verbose_name='имя')
-    employee_last_name = models.CharField(max_length=30, verbose_name='фамилия')
-    uchastok_instance = models.OneToOneField(Department, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.employee_name
 
 
 class Object(models.Model):

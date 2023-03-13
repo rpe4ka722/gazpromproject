@@ -13,6 +13,7 @@ import os.path
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -51,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'main.middleware.user_last_active_middleware'
 ]
 
 ROOT_URLCONF = 'mysite.urls'
@@ -138,11 +140,11 @@ DATETIME_INPUT_FORMATS = '%d.%m.%Y %H:%i'
 
 LANGUAGE_CODE = 'ru-RU'
 
-TIME_ZONE = 'Asia/Kolkata'
+TIME_ZONE = 'Asia/Yekaterinburg'
 
 USE_I18N = True
 
 USE_L10N = False
 
-USE_TZ = True
+USE_TZ = False
 

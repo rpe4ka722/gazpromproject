@@ -1,0 +1,105 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Список объектов{% endblock %}
+{% block content %}
+    <div class="button-bar">
+        <span>
+            <form action="{% url 'rich:equip_create' %}">
+                <button type="submit" value="Создать">Создать запись</button>
+            </form>
+        </span>
+        <div id="filter-button">
+            <span>
+                {% if filtered_by == '' %} Фильтрация отсутствует.
+                {% else %} Объекты отфильтрованы по: {{ filtered_by }}</span>
+                {% endif %}
+            <button type="submit" form="filter_reset" value="Сбросить" >Сбросить</button>
+            <input type="button" value="Фильтр" onmousedown="showhide('filter')" id="filter-button-dynamic">
+            <form id="filter_reset">
+                <a href={% url 'rich:equip_list' %}>
+                </a>
+            </form>
+        </div>
+    </div>
+    <div id="filter">
+            <div class="filter-content">
+                <form id="filter_form" method="get" action={% url 'rich:equip_list' %}>
+                    <span>Фильтровать по типу:</span>
+                    <p>
+                        <select name="type" form="filter_form">
+                            <option value="all">Все</option>
+                            {% for i in filter_objects %}
+                                <option value="{{ i.class_name }}">{{ i.class_name}}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                    <span>Фильтровать по диапазону:</span>
+                    <p>
+                        <select name="frequency" form="filter_form">
+                            <option value="all">Все</option>
+                            {% for i in filter_objects %}
+                               <option value="{{ i.frequency_range }}">{{ i.frequency_range }}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                </form>
+            </div>
+            <div id="filter-button-bar">
+                <button type="submit" form="filter_form" value="Применить">Применить</button>
+            </div>
+    </div>
+    <div class="content">
+        <!-------------------------------------------------------------------->
+        {% for i in objects %}
+        <div id="equip_delete_{{ i.id }}" class="change_form_ozp">
+            <form method="post" action="{% url 'rich:equip_delete' i.id %}">
+                {% csrf_token %}
+                Вы действительно хотите удалить запись???
+                <br><br>
+                <input type="submit" value="Удалить">
+                <button onmousedown="showhide_changeform('equip_delete_{{ i.id }}')" class="close_button">
+                <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+        <!-------------------------------------------------------------------->
+        <div class="table">
+            <table>
+                <tr class="head_row">
+                    <th>Наименование оборудования</th>
+                    <th>Тип оборудвоания</th>
+                    <th>Производитель</th>
+                    <th>Диапазон частот</th>
+                    <th>Основные технические характеристики</th>
+                    <th>Перечень РЭС</th>
+                    <th>Удалить</th>
+                </tr>
+                {% if objects %}
+                    {% for i in objects %}
+                        <tr class="table_row">
+                            <td>{{ i.name }}</td>
+                            <td>{{ i.class_name }}</td>
+                            <td>{{ i.manufacter }}</td>
+                            <td>{{ i.frequency_range }}</td>
+                            <td>
+                                <a href="{{ i.fs_form.url }}">
+                                    {{ i.name }} общие технические данные
+                                </a>
+                            </td>
+                            <td>
+                                РЭС
+                            </td>
+                            <td align="center">
+                                <button onmousedown="showhide_changeform('equip_delete_{{ i.id }}')" class="close_button">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <p>Записи отсутствуют</p>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+{% endblock %}
