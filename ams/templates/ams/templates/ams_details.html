@@ -1,0 +1,401 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Антенно мачтовое сооружение {{ i.object_name }}{% endblock %}
+{% block content %}
+    <div class="button-bar">
+        <span>
+            <form action="{% url 'ams:ams' %}">
+                <button type="submit" value="К списку">К списку</button>
+            </form>
+        </span>
+    </div>
+    <div class="content">
+        <div class="table">
+            <table>
+            <!-------------------------------------------------------------------->
+                <tr>
+                    <td><h3>Объект на котором установлено антенно-мачтовое сооружение</h3></td>
+                    <td colspan="2">
+                        <a href="{{ i.object_name.get_absolute_url }}">
+                            {{ i.object_name.object_name }}
+                        </a>
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+                <tr>
+                    <td><h3>Высота АМС</h3></td>
+                    <td>{% if i.height == None %}
+                            Не указана
+                        {% else %}
+                            {{ i.height }} м
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_height')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+                <tr>
+                    <td><h3>Вес АМС</h3></td>
+                    <td>
+                        {% if i.weight == None %}
+                            Не указан
+                        {% else %}
+                            {{ i.weight }} т
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_weight')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+                <tr>
+                    <td><h3>Тип АМС</h3></td>
+                    <td>{% if i.type == None %}
+                            Не указан
+                        {% else %}
+                            {{ i.type }}
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_type')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+                <tr>
+                    <td><h3>Дата ввода АМС в эксплуатацию </h3></td>
+                    <td>{% if i.date_birth == None %}
+                            Не указана
+                        {% else %}
+                            {{ i.date_birth }}
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_date')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+                <tr>
+                    <td><h3>Схема АМС</h3></td>
+                    <td>{% if i.scheme %}
+                            <a href="{{ i.scheme.url }}">
+                                <i class="fa-regular fa-file-lines"></i>
+                            </a>
+                        {% else %}
+                            Отсутствует
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_scheme')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+                   <tr>
+                    <td><h3>Фотографии АМС</h3></td>
+                    <td>{% if i.foto.all %}
+                            {% for f in i.foto.all %}
+                            <div class="foto_ozp">
+                                <a href="{{ f.foto.url }}" target="_blank">
+                                    <img src="{{ f.foto.url }}">
+                                </a>
+                                <button onmousedown="showhide_changeform('foto_{{ f.id }}')" class="foto_button">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            Отсутствуют
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_normative')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+                <tr>
+                    <td><h3>Результаты измерения вертикальности</h3></td>
+                    <td>{% if i.protocol.all %}
+                            {% for f in i.protocol.all %}
+                            <span>
+                                <a href="{{ f.protocol_pdf.url }}">
+                                    <i class="fa-regular fa-file-lines"></i>
+                                </a>
+                                Дата протокола: {{ f.year }}
+                                Отклонение: {{ f.rezult }}
+                            </span>
+                            {% endfor %}
+                        {% else %}
+                            Отсутствуют
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_normative')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+                <tr>
+                    <td><h3>Результаты диагностического обследования</h3></td>
+                    <td>{% if i.diagnostic.all %}
+                            {% for f in i.diagnostic.all %}
+                            <span>
+                                <a href="{{ f.result.url }}">
+                                    <i class="fa-regular fa-file-lines"></i>
+                                </a>
+                                Дата протокола: {{ f.year }}
+                            </span>
+                            {% endfor %}
+                        {% else %}
+                            Отсутствуют
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_normative')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+                  <tr>
+                    <td><h3>Проектная документация</h3></td>
+                    <td>{% if i.project.all %}
+                            {% for f in i.project.all %}
+                            <span>
+                                <a href="{{ f.documentation.url }}">
+                                    <i class="fa-regular fa-file-lines"></i>
+                                </a>
+                                Год разработки документации: {{ f.year.year }}
+                                Проектный институт: {{ f.organization_name }}
+                            </span>
+                            {% endfor %}
+                        {% else %}
+                            Отсутствуют
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_normative')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+                  <tr>
+                    <td><h3>Санитарно эпидемиологические заключения</h3></td>
+                    <td>{% if i.sez.all %}
+                            {% for f in i.sez.all %}
+                            <span>
+                                <a href="{{ f.sez_protocol.url }}">
+                                    <i class="fa-regular fa-file-lines"></i>
+                                </a>
+                                Год проведения измерений: {{ f.year.year }}
+                            </span>
+                            {% endfor %}
+                        {% else %}
+                            Отсутствуют
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_normative')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+                <tr>
+                    <td><h3>Инвентарный номер</h3></td>
+                    <td>{% if i.inventory.all %}
+                            {{ i.inventory.inventory_number }}
+                        {% else %}
+                            Не указан
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_normative')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+                <tr>
+                    <td><h3>Наименование объекта основных средств</h3></td>
+                    <td>{% if i.inventory.all %}
+                            {{ i.inventory.inventory_name }}
+                        {% else %}
+                            Не указано
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_normative')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+                <tr>
+                    <td><h3>Характеристика объекта основных средств</h3></td>
+                    <td>{% if i.inventory.all %}
+                            {{ i.inventory.description }}
+                        {% else %}
+                            Не указана
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_normative')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+                <tr>
+                    <td colspan="2"><h3>Удалить запись</h3></td>
+                    <td align="center">
+                        <button onmousedown="showhide_changeform('delete_ozp_{{ i.id }}')" class="close_button">
+                                    <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+<!------------------------------------------------------------------------------------------->
+        <div id="change_zamechanie" class="change_form_ozp">
+            <form method="post" action="{% url 'main:ozp_zamechanie_change' i.id %}" id="text_zamechanya" >
+                {% csrf_token %}
+                Опишите замечание:
+                <br>
+                <textarea name="text_zamechanya" id="text_zamechanya" maxlength="500"  onclick="this.setSelectionRange(0,0);">
+                </textarea>
+                <br>
+                <input type="submit" value="Изменить">
+                <button onmousedown="showhide_changeform('change_zamechanie')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <div id="change_normative" class="change_form_ozp">
+            <form method="post" action="{% url 'main:ozp_normative_change' i.id %}" onload="ClearForm()">
+                {% csrf_token %}
+                Ссылка на нормативную документацию:
+                <br>
+                <textarea name="text_normative" id="text_normative" maxlength="500"  onclick="this.setSelectionRange(0,0);">
+                </textarea>
+                <br>
+                <input type="submit" value="Изменить">
+                <button onmousedown="showhide_changeform('change_normative')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <div id="change_srok" class="change_form_ozp">
+            <form method="post" action="{% url 'main:srok_ustranenia_change' i.id %}">
+                {% csrf_token %}
+                Укажите срок устранения замечания:
+                <br>
+                <input type="date" name="srok" id="srok" class="date_choice">
+                <br>
+                <input type="submit" value="Изменить">
+                <button onmousedown="showhide_changeform('change_srok')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <div id="control_srok" class="change_form_ozp">
+            <form method="post" action="{% url 'main:control_srok_change' i.id %}">
+                {% csrf_token %}
+                Укажите контрольный срок:
+                <br>
+                <input type="date" name="srok" id="srok" class="date_choice">
+                <br>
+                <input type="submit" value="Изменить">
+                <button onmousedown="showhide_changeform('control_srok')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <div id="foto_zamechania" class="change_form_ozp">
+            <form method="post" action="{% url 'main:foto_zamechanie_add' i.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                Добавить фотографию замечания:
+                <br>
+                <input type="file" name="foto" id="foto">
+                <br>
+                <br>
+                <input type="submit" value="Загрузить">
+                <button onmousedown="showhide_changeform('foto_zamechania')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <div id="foto_ustranenia" class="change_form_ozp">
+            <form method="post" action="{% url 'main:foto_vipolnenie_add' i.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                Добавить фотографию устранения замечания:
+                <br>
+                <input type="file" name="foto" id="foto">
+                <br>
+                <br>
+                <input type="submit" value="Загрузить">
+                <button onmousedown="showhide_changeform('foto_ustranenia')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <div id="accept" class="change_form_ozp">
+            <form action="{% url 'main:accept' i.id %}">
+                <h4>Вы уверены что хотите принять устранение замечания?</h4>
+                <button type="submit" value="Выполнение">Да</button>
+                <button onmousedown="showhide_changeform('accept')" class="close_button">
+                    Нет
+                </button>
+            </form>
+        </div>
+        <div id="vipolnenie" class="change_form_ozp">
+            <form method="post" action="{% url 'main:podano_na_vipolnenie' i.id %}" id="comment_form" >
+                {% csrf_token %}
+                Для устранения замечания загрузите фографию:
+                <input type="file" name="foto" id="foto">
+                <br>
+                Напишите комментарий:
+                <textarea name="comment" id="comment" maxlength="500"  onclick="this.setSelectionRange(0,0);">
+                </textarea>
+                <input type="submit" value="Выполнить">
+                <button onmousedown="showhide_changeform('vipolnenie')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <div id="otklonit_vipolnenie" class="change_form_ozp">
+            <form method="post" action="{% url 'main:not_accept' i.id %}">
+                {% csrf_token %}
+                Замечание не принято!
+                Напишите комментарий:
+                <textarea name="comment" id="comment" maxlength="500"  onclick="this.setSelectionRange(0,0);">
+                </textarea>
+                <input type="submit" value="Отклонить">
+            </form>
+        </div>
+        <!-------------------------------------------------------------------->
+        <div id="delete_ozp_{{ i.id }}" class="change_form_ozp">
+            <form method="post" action="{% url 'main:delete_ozp' i.id %}">
+                {% csrf_token %}
+                Вы действительно хотите удалить запись???
+                <br><br>
+                <input type="submit" value="Удалить">
+                <button onmousedown="showhide_changeform('delete_ozp_{{ i.id }}')" class="close_button">
+                <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

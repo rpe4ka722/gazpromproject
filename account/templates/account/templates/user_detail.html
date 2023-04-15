@@ -1,0 +1,230 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}
+    Страница редактирования данных пользователя
+{% endblock %}
+{% block content %}
+    <div class="button-bar">
+        <span>
+            <form action="{% url 'main:structure' %}">
+                <button type="submit">Назад</button>
+            </form>
+        </span>
+    </div>
+    <div class="content">
+        <div class="table">
+            <table>
+                <tr>
+                    <td>
+                        Логин:
+                    </td>
+                    <td>
+                        {{ current_user.username }}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('login_change')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <! ------------------------------------------------------------------------------------------->
+                <tr>
+                    <td>
+                        Имя пользователя:
+                    </td>
+                    <td>
+                        {{ current_user.first_name }}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('firstname_change')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <! ------------------------------------------------------------------------------------------->
+                <tr>
+                    <td>
+                        Фамилия пользователя:
+                    </td>
+                    <td>
+                        {{ current_user.last_name }}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('lastname_change')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <! ------------------------------------------------------------------------------------------->
+                <tr>
+                    <td>
+                        Подразделение:
+                    </td>
+                    <td>
+                        {{ current_user.profile.department }}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('department_change')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <! ------------------------------------------------------------------------------------------->
+                <tr>
+                    <td>
+                        Адрес электронной почты:
+                    </td>
+                    <td>
+                        {{ current_user.email }}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('email_change')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <! ------------------------------------------------------------------------------------------->
+                <tr>
+                    <td colspan="3" align="center">
+                       <button type="submit" onmousedown="showhide_changeform('password_reset')">Сбросить пользовательский пароль</button>
+                    </td>
+                </tr>
+                <! ------------------------------------------------------------------------------------------->
+            </table>
+            {{ msg }}
+        </div>
+        <! ------------------------------------------------------------------------------------------->
+        <div id="login_change" class="change_form_ozp">
+                <form method="post" action="{% url 'account:login_change' current_user.id %}">
+                    {% csrf_token %}
+                    Форма изменения пользовательского логина
+                    <br>
+                    <br>
+                    Введите новый логин:
+                    <br>
+                    <br>
+                        <input type="text" name="login" maxlength="20">
+                    <br>
+                    <br>
+                    <input type="submit" value="Изменить">
+                    <button onmousedown="showhide_changeform('login_change')" class="close_button">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </form>
+        </div>
+        <! ------------------------------------------------------------------------------------------->
+        <div id="firstname_change" class="change_form_ozp">
+                <form method="post" action="{% url 'account:change_first_name' current_user.id %}">
+                    {% csrf_token %}
+                    Форма изменения имени пользователя
+                    <br>
+                    <br>
+                    Введите новое имя:
+                    <br>
+                    <br>
+                        <input type="text" name="firstname" maxlength="20">
+                    <br>
+                    <br>
+                    <input type="submit" value="Изменить">
+                    <button onmousedown="showhide_changeform('firstname_change')" class="close_button">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </form>
+        </div>
+        <! ------------------------------------------------------------------------------------------->
+        <div id="lastname_change" class="change_form_ozp">
+                <form method="post" action="{% url 'account:change_last_name' current_user.id %}">
+                    {% csrf_token %}
+                    Форма изменения фамилии пользователя
+                    <br>
+                    <br>
+                    Введите новую фамилию пользователя:
+                    <br>
+                    <br>
+                    <input type="text" name="lastname" maxlength="20">
+                    <br>
+                    <br>
+                    <input type="submit" value="Изменить">
+                    <button onmousedown="showhide_changeform('lastname_change')" class="close_button">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </form>
+        </div>
+        <! ------------------------------------------------------------------------------------------->
+        <div id="lastname_change" class="change_form_ozp">
+                <form method="post" action="{% url 'account:change_last_name' current_user.id %}">
+                    {% csrf_token %}
+                    Форма изменения фамилии пользователя
+                    <br>
+                    <br>
+                    Введите новую фамилию пользователя:
+                    <br>
+                    <br>
+                    <input type="text" name="lastname" maxlength="20">
+                    <br>
+                    <br>
+                    <input type="submit" value="Изменить">
+                    <button onmousedown="showhide_changeform('lastname_change')" class="close_button">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </form>
+        </div>
+        <! ------------------------------------------------------------------------------------------->
+        <div id="department_change" class="change_form_ozp">
+                <form method="post" action="{% url 'account:change_department' current_user.id %}">
+                    {% csrf_token %}
+                    Форма изменения позразделения пользователя
+                    <br>
+                    <br>
+                    Выберите подразделение:
+                    <br>
+                    <br>
+                    <select name="department">
+                        {% for i in department %} }}
+                            <option value="{{ i.id }}">{{ i }}</option>
+                        {% endfor %}
+                    </select>
+                    <br>
+                    <br>
+                    <input type="submit" value="Изменить">
+                    <button onmousedown="showhide_changeform('department_change')" class="close_button">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </form>
+        </div>
+        <! ------------------------------------------------------------------------------------------->
+        <div id="email_change" class="change_form_ozp">
+                <form method="post" action="{% url 'account:change_email' current_user.id %}">
+                    {% csrf_token %}
+                    Форма изменения почтового адреса пользователя
+                    <br>
+                    <br>
+                    Введите адрес:
+                    <br>
+                    <br>
+                        <input type="email" name="email">
+                    <br>
+                    <br>
+                    <input type="submit" value="Изменить">
+                    <button onmousedown="showhide_changeform('email_change')" class="close_button">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </form>
+        </div>
+        <! ------------------------------------------------------------------------------------------->
+        <div id="password_reset" class="change_form_ozp">
+                <form method="post" action="{% url 'account:password_reset' current_user.id %}">
+                    {% csrf_token %}
+                    Вы действительно хотите сбросить пароль пользователя?
+                    <br>
+                    (пароль примет пустое значение)
+                    <br>
+                    <br>
+                    <input type="submit" value="Да">
+                    <button onmousedown="showhide_changeform('password_reset')" class="close_button">
+                        Нет
+                    </button>
+                </form>
+        </div>
+        <! ------------------------------------------------------------------------------------------->
+    </div>
+{% endblock %}

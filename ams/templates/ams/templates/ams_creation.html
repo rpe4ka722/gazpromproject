@@ -1,0 +1,33 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Создание АМС{% endblock %}
+{% block content %}
+    <div class="creation_form">
+        <div>
+            <h2>Для создания АМС заполните представленную форму:</h2>
+        </div>
+        <div>
+            <form action="{% url 'ams:ams_create' %}" method="post">
+                <div>
+                    {% csrf_token %}
+                    <div>
+                        {% for field in form %}
+                            <div class="form-group">
+                                {{ field.label_tag }}
+                                <div>{{ field }}</div>
+                                {% if field.errors%}
+                                    {% for error in field.errors %}
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <br>
+                <div class="account-button">
+                    <input type="submit" value="Создать объект">
+                </div>
+            </form>
+        </div>
+        <div>{{ msg }}</div>
+    </div>
+{% endblock %}
