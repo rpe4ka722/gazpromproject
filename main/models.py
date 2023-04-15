@@ -87,14 +87,23 @@ class Department(models.Model):
         ('Участок связи №18', 'Участок связи №18'),
         ('Участок связи №19', 'Участок связи №19'),
         ('Участок связи №20', 'Участок связи №20'),
-        ('Администрация', 'Администрация')
+        ('АПГ', 'АПГ'),
+        ('Руководство', 'Руководство'),
+        ('ПТО', 'ПТО'),
+        ('ООТиПБ', 'ООТиПБ'),
+        ('СЭСПД', 'СЭСПД'),
+        ('группа РРЛ', 'группа РРЛ'),
+        ('группа ЭПУС', 'группа ЭПУС'),
+        ('группа РС', 'группа РС'),
+        ('группа КС', 'группа КС'),
+        ('группа ПД', 'группа ПД'),
     ]
 
     CEH_CHOICES = [
         ('Ноябрьский цех связи', 'НЦС'),
         ('Сургутский цех связи', 'СЦС'),
         ('Тюменский цех связи', 'ТЦС'),
-        ('', ''),
+        ('ПЛС', 'ПЛС'),
         ('Администрация', 'Администрация')
     ]
 
@@ -105,7 +114,7 @@ class Department(models.Model):
         ordering = ['ceh', 'uchastok']
 
     def __str__(self):
-        return self.uchastok
+        return self.ceh + ' ' + self.uchastok
 
 
 class Object(models.Model):
@@ -113,7 +122,7 @@ class Object(models.Model):
     position = models.OneToOneField(Position, on_delete=models.PROTECT, verbose_name='Место расположения станции')
     rrl_line = models.ForeignKey(RrlLine, on_delete=models.DO_NOTHING, null=True, blank=True,
                                  verbose_name='наименование линии')
-    uchastok = models.ForeignKey(Department, on_delete=models.PROTECT, blank=True, null=True,
+    uchastok = models.ForeignKey(Department, on_delete=models.DO_NOTHING, blank=True, null=True,
                                  verbose_name='участок связи')
     last_modify = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     time_modify = models.DateTimeField(auto_now=True)

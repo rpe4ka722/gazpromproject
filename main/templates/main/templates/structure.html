@@ -3,15 +3,14 @@
 {% block content %}
     <div class="button-bar">
         <span>
-            <form action="{% url 'main:create_uchastok' %}">
-                <button type="submit" value="Создать">Создать запись</button>
+            <form action="{% url 'main:user_create' %}">
+                <button type="submit" value="Создать">Создать</button>
             </form>
         </span>
         <span>
-            <form action="{% url 'main:export_xls_department' filtered_by %}">
-                <button type="submit" value="Создать">Выгрузить</button>
-            </form>
+            {{ msg }}
         </span>
+    <!-------------------------------------------------------------------->
         <div id="filter-button">
             <span>
                 {% if filtered_by == 'all' %} Фильтрация отсутствует.
@@ -24,16 +23,19 @@
                 </a>
             </form>
         </div>
+    <!-------------------------------------------------------------------->
     </div>
+    <!-------------------------------------------------------------------->
     <div id="filter">
         <div class="filter-content">
             <form id="filter_form" method="get" action={% url 'main:structure' %}>
-                <span>Фильтровать по цеху:</span>
+                <span>Фильтровать по подразделению:</span>
                 <p>
-                    <select name="ceh" form="filter_form">
-                             {% for i in ceh %}
-                                <option value="{{ i }}">{{ i }}</option>
-                             {% endfor %}
+                    <select name="department" form="filter_form">
+                         <option value="all" selected>Все</option>
+                         {% for i in department %}
+                            <option value="{{ i.id }}">{{ i }}</option>
+                         {% endfor %}
                     </select>
                 </p>
             </form>
@@ -42,42 +44,61 @@
             <button type="submit" form="filter_form" value="Применить">Применить</button>
         </div>
     </div>
+    <!-------------------------------------------------------------------->
     <div class="content">
+        <!-------------------------------------------------------------------->
+        {% for i in objectlist %}
+            <div id="user_delete_{{ i.id }}" class="change_form_ozp">
+                <form method="post" action="{% url 'main:user_delete' i.id %}">
+                    {% csrf_token %}
+                    Вы действительно хотите удалить выбранного пользователя {{ i.username }}???
+                    <br><br>
+                    <input type="submit" value="Удалить">
+                    <button onmousedown="showhide_changeform('user_delete_{{ i.id }}')" class="close_button">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </form>
+            </div>
+        {% endfor %}
+        <!-------------------------------------------------------------------->
         <div class="table">
             <table>
                 <tr>
-                    <th>Цех</th>
-                    <th>Участок</th>
+                    <th>Имя пользователя</th>
                     <th>Пользователь</th>
+                    <th>Подразделение</th>
                     <th>Статус</th>
-                    <th>Удалить</th>
+                    <th width="30 px">Удалить пользователя</th>
                 </tr>
+            <!-------------------------------------------------------------------->
                 <tr>
             {% if objectlist %}
                 {% for i in objectlist %}
                     <tr>
-                        <td>{{ i.profile.department.ceh }}</td>
-                        <td>{{ i.profile.department.uchastok }}</td>
+                        <td><a href="{% url 'account:user_detail' i.id %}">{{ i }}</a></td>
                         <td>{{ i.first_name }} {{ i.last_name }}</td>
-                        <td>
+                        <td>{{ i.profile.department }}</td>
+                        <td align="center">
                             {% if i.is_online %}
-                                +
+                                <svg height="20" width="20">
+                                    <circle cx="10" cy="10" r="5" stroke="green" stroke-width="3" fill="green" />
+                                </svg>
                             {% else %}
-                                -
+                                <svg height="20" width="20">
+                                    <circle cx="10" cy="10" r="5" stroke="red" stroke-width="3" fill="red" />
+                                </svg>
                             {% endif %}
                         </td>
                         <td align="center">
-                            <form method="post" action="{% url 'main:delete_uchastok' i.pk %}">
-                                {% csrf_token %}
-                                <button type="submit">
+                            <button onmousedown="showhide_changeform('user_delete_{{ i.id }}')" class="close_button">
                                     <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </form>
+                            </button>
                         </td>
                     </tr>
                 {% endfor %}
+                <!-------------------------------------------------------------------->
             {% else %}
-                <p>No polls are available.</p>
+                <p>Записи отсутствуют</p>
             {% endif %}
             </table>
         </div>

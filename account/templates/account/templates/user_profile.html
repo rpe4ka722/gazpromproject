@@ -1,36 +1,34 @@
 {% extends "main/templates/layout.html" %}
 {% block content %}
-    <p>Вы вошли как {{  user.username  }}. <br>На данной странице вы сможете изменить свой профиль</p>
-    <p>Имя: {{  user.first_name  }}</p>
-    <form action="{% url 'account:change_first_name' %}" method="post">
-        {% csrf_token %}
-        {{ first_name }}<br>
-        <p><input type="submit" value="Сменить имя"></p>
-    </form>
-    <p>Фамилия: {{  user.last_name  }}</p>
-    <form action="{% url 'account:change_last_name' %}" method="post">
-        {% csrf_token %}
-        {{ last_name }}<br>
-        <p><input type="submit" value="Сменить фамилию"></p>
-    </form>
-    <p>Почта: {{  user.email  }}</p>
-    <form action="{% url 'account:change_email' %}" method="post">
-        {% csrf_token %}
-        {{ email }}<br>
-        <p><input type="submit" value="Сменить email"></p>
-    </form>
-    <p>Подразделение: {{ user.userprofile.department }}</p>
-    <form action="{% url 'account:change_department' %}" method="post">
-        {% csrf_token %}
-        {{ department }}
+    <div class="list">
+        <div>Вы вошли как {{  user.get_full_name  }}. <br>На данной странице представлена информация о вашей учетной записи:</div>
         <br>
-        <p><input type="submit" value="Сменить подразделение"></p>
-    </form>
-    <p>Дата регистрации: {{ user.date_joined }}</p>
-    <br>
-    <br>
-    <form action="{% url 'account:change_password' %}">
-        <button>Сменить пароль</button>
-    </form>
-    {{ msg }}
+        <div>Имя:
+            <b>{{  user.first_name  }}</b>
+        </div>
+        <br>
+        <div>
+            Фамилия: <b>{{  user.last_name  }}</b>
+        </div>
+        <br>
+        <div>
+            Почтовый адрес: <b>{{  user.email  }}</b>
+        </div>
+        <br>
+        <div>
+            Подразделение: <b>{{ user.profile.department }}</b>
+        </div>
+        <br>
+        <div>
+            Дата регистрации: <b>{{ user.date_joined }}</b>
+        </div>
+        <br>
+        <div>
+            <form action="{% url 'account:change_password' %}">
+                <button>Сменить пароль</button>
+            </form>
+        </div>
+        <br>
+        <p>Для изменения информации о вашей учетной записи обратитесь к администратору.</p>
+    </div>
 {% endblock %}

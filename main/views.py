@@ -3,7 +3,9 @@ from datetime import datetime, timedelta
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 
-from main.scripts import is_staff
+from account.forms import UserCreationForm
+from account.models import Userprofile
+from main.scripts import is_staff, form_errors_text
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponseNotFound, HttpResponse
@@ -174,7 +176,6 @@ def import_data(request, choice, object_id):
                         x.update({'district': cell.column})
                     if str(cell.value) == str(choice.address):
                         x.update({'address': cell.column})
-            print(x)
             for row in range(row_count):
                 lat = ws.cell(row=row + 5, column=x['coords_lat']).value
                 lon = ws.cell(row=row + 5, column=x['coords_lon']).value
@@ -182,9 +183,7 @@ def import_data(request, choice, object_id):
                     pass
                 else:
                     y = str_to_coord(lat)
-                    print(y)
                     z = str_to_coord(lon)
-                    print(z)
                     pos = Position(latitude_degrees=y[0], latitude_minutes=y[1], latitude_seconds=y[2],
                                    longitude_degrees=z[0], longitude_minutes=z[1], longitude_seconds=z[2],
                                    address=ws.cell(row=row + 5, column=x['address']).value,
@@ -212,87 +211,60 @@ def import_data(request, choice, object_id):
 
 
 @login_required(login_url='account:login')
-def structure(request):
+def structure(request, msg=''):
     if request.GET:
         objectslist = User.objects.all()
-        print(objectslist)
-        if request.GET['ceh'] == '':
+        if request.GET['department'] == 'all':
             filtered_by = 'Отсутствует'
         else:
-            filtered_by = request.GET['ceh']
+            dep = request.GET['department']
+            filtered_by = Department.objects.get(id=dep)
+            objectslist = User.objects.filter(profile__in=Userprofile.objects.filter(department=dep))
     else:
         objectslist = User.objects.all()
         filtered_by = 'all'
-    ceh_list = []
-    for i in Department.objects.all():
-        if i.ceh in ceh_list:
-            pass
-        else:
-            ceh_list.append(i.ceh)
-
-    context = {'objectlist': objectslist, 'ceh': ceh_list, 'filtered_by': filtered_by}
+    department = Department.objects.all()
+    context = {'objectlist': objectslist, 'department': department, 'filtered_by': filtered_by, 'msg': msg}
     return render(request, "main/templates/structure.html", context)
 
 
 @login_required(login_url='account:login')
 @is_staff
-def create_uchastok(request):
-    if request.method == 'POST':
-        form1 = DepartmentForm(request.POST)
-        form2 = EmployeeForm(request.POST)
-        if form1.is_valid() and form2.is_valid():
-            cd1 = form1.cleaned_data
-            cd2 = form2.cleaned_data
-            dep = Department(ceh=cd1['ceh'], uchastok=cd1['uchastok'])
-            dep.save()
-            emp = Employee(employee_name=cd2['employee_name'], employee_last_name=cd2['employee_last_name'],
-                           uchastok_instance=dep)
-            emp.save()
-            return redirect('main:structure')
-        else:
-            msg = 'Вы ввели некорректные данные'
-            context = {'form1': form1, 'form2': form2, 'msg': msg}
-            return render(request, "main/templates/uchastok_creation.html", context)
-    else:
-        form1 = DepartmentForm()
-        form2 = EmployeeForm()
-        context = {'form1': form1, 'form2': form2}
-    return render(request, "main/templates/uchastok_creation.html", context)
-
-
-@login_required(login_url='account:login')
-@is_staff
-def delete_uchastok(request, pk):
+def user_delete(request, user_id):
     try:
-        obj = Department.objects.get(id=pk)
-        obj.delete()
-        return redirect('main:structure')
-    except Department.DoesNotExist:
-        return HttpResponseNotFound("<h2>Not found</h2>")
+        current_user = request.user
+        user = User.objects.get(id=user_id)
+        if user == current_user:
+            msg = 'Вы не можете удалить пользователя под которым авторизованы'
+            return structure(request, msg=msg)
+        else:
+            user.delete()
+    except ObjectDoesNotExist:
+        pass
+    return redirect('main:structure')
 
 
 @login_required(login_url='account:login')
 @is_staff
-def change_uchastok(request, pk):
-    obj = Employee.objects.get(id=pk)
-    uch = obj.uchastok_instance.uchastok
-    name = str(obj.employee_name + ' ' + obj.employee_last_name)
+def user_create(request, msg=''):
+    form = UserCreationForm(request.POST or None)
     if request.method == 'POST':
-        form = EmployeeForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
-            obj.employee_name = cd['employee_name']
-            obj.employee_last_name = cd['employee_last_name']
-            obj.save()
-            return redirect('main:structure')
+            if User.objects.filter(username=cd['username']).exists():
+                msg = "Такой пользователь уже зарегестирован"
+            else:
+                user = User.objects.create_user(username=cd['username'], password=cd['password'], email=cd['email'],
+                                                first_name=cd['first_name'], last_name=cd['last_name'],
+                                                is_staff=cd['is_staff'])
+                user.save()
+                department = request.POST['department']
+                profile = Userprofile.objects.create(user=user, department=Department.objects.get(id=department))
+                profile.save()
+                return redirect('main:structure')
         else:
-            msg = 'Вы ввели некорректные данные'
-            context = {'form': form, 'msg': msg, 'pk': pk, 'uch': uch, 'name': name}
-            return render(request, "main/templates/change_uchastok.html", context)
-    else:
-        form = EmployeeForm()
-        context = {'form': form, 'pk': pk, 'uch': uch, 'name': name}
-    return render(request, "main/templates/change_uchastok.html", context)
+            msg = form_errors_text(form)
+    return render(request, "main/templates/user_creation.html", {'form': form, 'msg': msg})
 
 
 @login_required(login_url='account:login')

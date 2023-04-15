@@ -1,0 +1,28 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Создание пользователя{% endblock %}
+{% block content %}
+    <div class="creation_form">
+        <p>Для создания пользователя заполните представленную форму:</p>
+            <form action="{% url 'main:user_create' %}" method="post">
+                {% csrf_token %}
+                <div>
+                    {% for field in form %}
+                        <div class="form-group">
+                            {{ field.label_tag }}
+                            <div>{{  field }}</div>
+                            <div>{{  field.help_text }}</div>
+                            <br>
+                            {% if field.errors%}
+                                {% for error in field.errors %}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="account-button">
+                    <input type="submit" value="Создать">
+                </div>
+            </form>
+        <p>{{ msg }}</p>
+    </div>
+{% endblock %}

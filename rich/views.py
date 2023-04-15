@@ -52,8 +52,7 @@ def rich_index(request):
         # пустой список для вывода критериев фильтрации
         if ceh == 'all' and uchastok == 'all':
             filtered_res_objects = Res.objects.all()
-            object_list = Object.objects.all().select_related('related_object', 'related_rich', 'related_registration',
-                                                              'type').prefetch_related('protokol')
+            object_list = Object.objects.all()
         else:
             filtered_departments = department_filter(ceh, uchastok)[0]
             filtered_by.extend(department_filter(ceh, uchastok)[1])
@@ -686,8 +685,18 @@ def export_xls_reg(request):
         ws.column_dimensions['E'].width = 30
         ws.column_dimensions['F'].width = 30
         for row in range(rows.count()):
-            atr_list = [rows[row].name, rows[row].start_date, rows[row].end_date, rows[row].days_left(),
-                        rows[row].related_res_reg.name, rows[row].related_res_reg.related_rich.name]
+            atr_list = [rows[row].name]
+            atr_list.append(rows[row].start_date)
+            atr_list.append(rows[row].end_date)
+            atr_list.append(rows[row].days_left())
+            try:
+                atr_list.append(rows[row].related_res_reg.name)
+            except AttributeError:
+                atr_list.append('-')
+            try:
+                atr_list.append(rows[row].related_res_reg.related_rich.name)
+            except AttributeError:
+                atr_list.append('-')
             for col_num in range(len(atr_list)):
                 ws.cell(row + 2, col_num + 1, value=atr_list[col_num])
                 ws.cell(row + 2, col_num + 1).font = font2
@@ -816,7 +825,6 @@ def res_export_xls(request):
         response['Content-Disposition'] = 'attachment; filename="res_list.xlsx"'
         wb = Workbook()
         rows = filtered_res_objects
-        print(rows)
         ws = wb.active
         row_num = 1
         columns = ['РЭС', 'Тип РЭС', 'Оборудование', 'Объект', 'РИЧ', 'Срок действия РИЧ', 'Регистрация',

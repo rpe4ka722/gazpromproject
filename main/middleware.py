@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from django.shortcuts import redirect
+
 
 def user_last_active_middleware(get_response):
     def middleware(request):
