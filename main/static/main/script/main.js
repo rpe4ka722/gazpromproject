@@ -59,3 +59,23 @@ function equipFunction() {
          b.value = 'Изменить';
     }
 }
+
+
+function inventoryFunction() {
+    var a = document.getElementById('select_inventory');
+    var e = document.getElementById('inventory_add');
+    var b = document.getElementById('select_inventory_button');
+    var c = document.getElementById('add_inventory');
+    if (a.value == "Добавить") {
+         e.style.display = 'block';
+         b.setAttribute("form", "inventory_add");
+         b.value = 'Добавить';
+         c.style.marginTop='320px';
+    }
+    else {
+         e.style.display = 'none';
+         b.setAttribute("form", "inventory_select_form");
+         b.value = 'Изменить';
+         c.style.marginTop='0';
+    }
+}

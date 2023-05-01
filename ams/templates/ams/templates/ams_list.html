@@ -121,7 +121,7 @@
                             <td align="center">{{ i.type }}</td>
                             <td align="center">
                                 {% if i.project.all %}
-                                    <a href="#">
+                                    <a href="{% url 'ams:project_list' i.id %}">
                                         <i class="fa-regular fa-folder-open"></i>
                                     </a>
                                 {% else %}
@@ -130,7 +130,7 @@
                             </td>
                             <td align="center">
                                 {% if i.diagnostic.all %}
-                                    <a href="#">
+                                    <a href="{% url 'ams:do_list' i.id %}">
                                         <i class="fa-regular fa-folder-open"></i>
                                     </a>
                                 {% else %}
@@ -139,7 +139,7 @@
                             </td>
                             <td align="center">
                                 {% if i.protocol.all %}
-                                    <a href="#">
+                                    <a href="{% url 'ams:measurement_list' i.id %}">
                                         <i class="fa-regular fa-folder-open"></i>
                                     </a>
                                 {% else %}
@@ -148,7 +148,7 @@
                             </td>
                             <td align="center">
                                 {% if i.sez.all %}
-                                    <a href="#">
+                                    <a href="{% url 'ams:sez_list' i.id %}">
                                         <i class="fa-regular fa-folder-open"></i>
                                     </a>
                                 {% else %}
@@ -175,7 +175,7 @@
                             </td>
                             <td align="center">
                                 {% if i.foto.all %}
-                                    <a href="#">
+                                    <a href="{% url 'ams:foto_list' i.id %}">
                                         <i class="fa-regular fa-folder-open"></i>
                                     </a>
                                 {% else %}
@@ -183,7 +183,16 @@
                                 {% endif %}
                             </td>
                             <td align="center">
-                                Отклонение
+                            {% if i.protocol.all %}
+                                {% if i.get_last_otklonenie.is_otklonenie %}
+                                    <img src="/static/main/img/Exclamation-Mark-Transparent-PNG.png" height="20" width="20">
+                                    {{ i.get_last_otklonenie.otklonenie }} мм
+                                {% else %}
+                                    <img src="/static/main/img/free-png.ru-39.png" height="20" width="20">
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
                             </td>
                         </tr>
                     {% endfor %}

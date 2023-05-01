@@ -989,16 +989,17 @@ def add_equipment(request, key):
 
 
 @login_required(login_url='account:login')
-def protokol_list(request, key):
+def protokol_list(request, key, msg=''):
     res = Res.objects.get(id=key)
     list = ResProtokol.objects.filter(related_res=res)
-    context = {'res': res, 'list': list}
+    protokol_form = ResProtokolForm()
+    context = {'res': res, 'list': list, 'protokol_form': protokol_form, 'msg': msg}
     return render(request, "rich/templates/protokol_list.html", context)
 
 
 @login_required(login_url='account:login')
 @is_staff
-def protokol_delete(request, key):
+def protocol_delete(request, key):
     obj = ResProtokol.objects.get(id=key)
     res_obj = obj.related_res.id
     obj.delete()
@@ -1020,3 +1021,20 @@ def add_res_protokol(request, key):
             msg = form_errors_text(form)
             return res_detail(request, key, msg=msg)
     return redirect('rich:res_detail', id=key)
+
+
+@login_required(login_url='account:login')
+@is_staff
+def add_res_protokol_list(request, key):
+    form = ResProtokolForm(request.POST, request.FILES or None)
+    res_obj = Res.objects.get(id=key)
+    if request.method == 'POST':
+        if form.is_valid():
+            f = form.save(commit=False)
+            f.related_res = res_obj
+            f.save()
+            return redirect('rich:protokol_list', key=key)
+        else:
+            msg = form_errors_text(form)
+            return protokol_list(request, key, msg=msg)
+    return redirect('rich:protokol_list', key=key)

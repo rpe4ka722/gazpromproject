@@ -35,6 +35,7 @@ urlpatterns = [
     path('add_equipment/<int:key>/', views.add_equipment, name='add_equipment'),
     path('change_equipment/<int:key>', views.change_equipment, name='change_equipment'),
     path('protokol_list/<int:key>/', views.protokol_list, name='protokol_list'),
-    path('protokol_delete/<int:key>', views.protokol_delete, name='protokol_delete'),
-    path('add_res_protokol/<int:key>', views.add_res_protokol, name='add_res_protokol')
+    path('protocol_delete/<int:key>', views.protocol_delete, name='protocol_delete'),
+    path('add_res_protokol/<int:key>/', views.add_res_protokol, name='add_res_protokol'),
+    path('add_res_protokol_list/<int:key>/', views.add_res_protokol_list, name='add_res_protokol_list')
 ]
