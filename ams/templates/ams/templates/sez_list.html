@@ -1,0 +1,73 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Протоколы измерений{% endblock %}
+{% block content %}
+    <div class="button-bar">
+        <span>
+            <button onmousedown="showhide_changeform('sez')">
+                Добавить
+            </button>
+        </span>
+        <span>
+            <a href="{% url 'ams:ams' %}">
+                <button type="submit" >Назад</button>
+            </a>
+        </span>
+        {{ msg }}
+    </div>
+    <div class="content">
+        <!-------------------------------------------------------------------->
+        {% for i in sez_list %}
+        <div id="sez_delete_{{ i.id }}" class="change_form_ozp">
+            <form method="post" action="{% url 'ams:sez_delete' i.id %}">
+                {% csrf_token %}
+                Вы действительно хотите удалить запись???
+                <br><br>
+                <input type="submit" value="Удалить">
+                <button onmousedown="showhide_changeform('sez_delete_{{ i.id }}')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+        <!-------------------------------------------------------------------->
+        <div id="sez" class="change_form_ozp">
+            <form method="post" action="{% url 'ams:add_sez_list' ams.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ sez_form.as_p }}
+                <input type="submit" value="Добавить">
+                <button onmousedown="showhide_changeform('sez')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <!-------------------------------------------------------------------->
+        <div class="table">
+            <table>
+                <tr class="head_row">
+                    <th>Дата</th>
+                    <th>Протокол</th>
+                    <th>Удалить</th>
+                </tr>
+                {% if sez_list %}
+                    {% for i in sez_list %}
+                        <tr class="table_row">
+                            <td>{{ i.year }}</td>
+                            <td align="center">
+                                <a href="{{ i.sez_protocol.url }}" target="_blank">
+                                    <i class="fa-solid fa-file-lines"></i>
+                                </a>
+                            </td>
+                            <td align="center">
+                                <button onmousedown="showhide_changeform('sez_delete_{{ i.id }}')" class="close_button">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <p>Записи отсутствуют</p>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+{% endblock %}

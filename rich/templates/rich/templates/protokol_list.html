@@ -1,0 +1,78 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Список протоколов {{ res }}{% endblock %}
+{% block content %}
+    <div class="button-bar">
+        <span>
+            <button onmousedown="showhide_changeform('protokol')">
+                Добавить
+            </button>
+        </span>
+        <span>
+            <form action="{% url 'rich:rich_index' %}">
+                <button type="submit" value="Создать">Назад</button>
+            </form>
+        </span>
+    </div>
+    {{ msg }}
+    <div class="content">
+        <!-------------------------------------------------------------------->
+        {% for i in list %}
+        <div id="protocol_delete_{{ i.id }}" class="change_form_ozp">
+            <form method="post" action="{% url 'rich:protocol_delete' i.id %}">
+                {% csrf_token %}
+                Вы действительно хотите удалить запись???
+                <br><br>
+                <input type="submit" value="Удалить">
+                <button onmousedown="showhide_changeform('protocol_delete_{{ res.id }}')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+        <!-------------------------------------------------------------------->
+        <div id="protokol" class="change_form_ozp">
+            <form method="post" action="{% url 'rich:add_res_protokol_list' res.id %}" enctype="multipart/form-data">
+                Добавить протокол измерений РЭС:
+                <br>
+                {% csrf_token %}
+                {{ protokol_form.as_p }}
+                <br>
+                <input type="submit" value="Добавить">
+                <button onmousedown="showhide_changeform('protokol')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <!-------------------------------------------------------------------->
+        <div class="table">
+            <table>
+                <tr class="head_row">
+                    <th>Измерения</th>
+                    <th>Дата измерения</th>
+                    <th>Протокол</th>
+                    <th>Удалить</th>
+                </tr>
+                {% if list %}
+                    {% for i in list %}
+                        <tr class="table_row">
+                            <td>{{ i.name }}</td>
+                            <td>{{ i.date }}</td>
+                            <td align="center">
+                                <a href="{{ i.doc.url }}">
+                                    <i class="fa-solid fa-file-lines"></i>
+                                </a>
+                            </td>
+                            <td align="center">
+                                <button onmousedown="showhide_changeform('protocol_delete_{{ i.id }}')" class="close_button">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <p>Записи отсутствуют</p>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+{% endblock %}

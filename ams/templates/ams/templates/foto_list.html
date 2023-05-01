@@ -1,0 +1,60 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Фотографии АМС{% endblock %}
+{% block content %}
+    <div class="button-bar">
+        <span>
+            <button onmousedown="showhide_changeform('foto')">
+                Добавить
+            </button>
+        </span>
+        <span>
+            <a href="{% url 'ams:ams' %}">
+                <button type="submit" >Назад</button>
+            </a>
+        </span>
+        {{ msg }}
+    </div>
+    <div class="content">
+        <!-------------------------------------------------------------------->
+        {% for i in foto_list %}
+        <div id="foto_delete_{{ i.id }}" class="change_form_ozp">
+            <form method="post" action="{% url 'ams:foto_list_delete' i.id %}">
+                {% csrf_token %}
+                Вы действительно хотите удалить фотографию???
+                <br><br>
+                <input type="submit" value="Удалить">
+                <button onmousedown="showhide_changeform('foto_delete_{{ i.id }}')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+        <!-------------------------------------------------------------------->
+        <div id="foto" class="change_form_ozp">
+            <form method="post" action="{% url 'ams:add_foto_list' ams.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ foto_form.as_p }}
+                <input type="submit" value="Добавить">
+                <button onmousedown="showhide_changeform('foto')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <!-------------------------------------------------------------------->
+        <div class="table">
+            {% for i in foto_list %}
+                <div class="foto_ams_list">
+                    <a href="{{ i.foto.url }}" target="_blank">
+                        <img src="{{ i.foto.url }}">
+                    </a>
+                    <button onmousedown="showhide_changeform('foto_delete_{{ i.id }}')" class="foto_button">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                    <div class="foto_text">
+                        {{ i.year.year }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Проектная документация{% endblock %}
+{% block content %}
+    <div class="button-bar">
+        <span>
+            <button onmousedown="showhide_changeform('project')">
+                Добавить
+            </button>
+        </span>
+        <span>
+            <a href="{% url 'ams:ams' %}">
+                <button type="submit" >Назад</button>
+            </a>
+        </span>
+        {{ msg }}
+    </div>
+    <div class="content">
+        <!-------------------------------------------------------------------->
+        {% for i in project_list %}
+        <div id="project_delete_{{ i.id }}" class="change_form_ozp">
+            <form method="post" action="{% url 'ams:project_delete' i.id %}">
+                {% csrf_token %}
+                Вы действительно хотите удалить запись???
+                <br><br>
+                <input type="submit" value="Удалить">
+                <button onmousedown="showhide_changeform('project_delete_{{ i.id }}')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+        <!-------------------------------------------------------------------->
+        <div id="project" class="change_form_ozp">
+            <form method="post" action="{% url 'ams:add_project_list' ams.id %}" enctype="multipart/form-data">
+                Добавить проектную документацию:
+                <br>
+                {% csrf_token %}
+                {{ project_form.as_p }}
+                <br>
+                <input type="submit" value="Добавить">
+                <button onmousedown="showhide_changeform('project')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <!-------------------------------------------------------------------->
+        <div class="table">
+            <table>
+                <tr class="head_row">
+                    <th>Проектный институт</th>
+                    <th>Дата</th>
+                    <th>Документация</th>
+                    <th>Удалить</th>
+                </tr>
+                {% if project_list %}
+                    {% for i in project_list %}
+                        <tr class="table_row">
+                            <td>{{ i.organization_name }}</td>
+                            <td>{{ i.year }}</td>
+                            <td align="center">
+                                <a href="{{ i.documentation.url }}" target="_blank">
+                                    <i class="fa-solid fa-file-lines"></i>
+                                </a>
+                            </td>
+                            <td align="center">
+                                <button onmousedown="showhide_changeform('project_delete_{{ i.id }}')" class="close_button">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <p>Записи отсутствуют</p>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+{% endblock %}
