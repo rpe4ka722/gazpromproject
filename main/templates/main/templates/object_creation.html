@@ -1,16 +1,40 @@
 {% extends "main/templates/layout.html" %}
 {% block title %}Создание объекта{% endblock %}
 {% block content %}
+    <div lass="creation_form">
+    <div>
         <p>Для создания объекта заполните представленную форму:</p>
-            <form action="{% url 'main:create_object' %}" method="post">
-                <div>
-                    {{ obj_form.as_p }}
-                    {{ pos_form.as_p }}
-                    {% csrf_token %}
-                </div>
-                <div class="account-button">
-                    <input type="submit" value="Создать объект">
-                </div>
-            </form>
-        <p>{{ msg }}</p>
+    </div>
+    <div>
+        <form action="{% url 'main:create_object' %}" method="post">
+            {{ obj_form.as_p }}
+            Укажите координаты объекта:
+            <div class="coordinats">
+                <table>
+                <tr>
+                    <td>Северной широты:</td>
+                    <td>{{ pos_form.latitude_degrees }}°{{ pos_form.latitude_minutes }}'{{ pos_form.latitude_seconds }}"</td>
+                </tr>
+                <tr>
+                    <td>Восточной долготы:</td>
+                    <td>{{ pos_form.longitude_degrees }}°{{ pos_form.longitude_minutes }}'{{ pos_form.longitude_seconds }}"</td>
+                </tr>
+                <tr>
+                    <td>Адрес:</td>
+                    <td>{{ pos_form.address}}</td>
+                </tr>
+                <tr>
+                    <td>Район:</td>
+                    <td>{{ pos_form.district}}</td>
+                </tr>
+                </table>
+            </div>
+            {% csrf_token %}
+            <div class="account-button">
+                <input type="submit" value="Создать объект">
+            </div>
+        </form>
+    </div>
+    <div>{{ msg }}</div>
+    </div>
 {% endblock %}

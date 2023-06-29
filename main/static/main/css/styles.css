@@ -167,13 +167,18 @@
 }
 
 .filter-content p {
-    margin: 0;
+    margin: 5px;
 }
 
 .filter-content p select {
     position: relative;
     width: 98%;
     height: 30px;
+}
+
+.filter-content p input {
+    position: relative;
+    height: 25px;
 }
 
 
@@ -236,6 +241,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    -webkit-text-stroke: 0.4px black;
+    -webkit-text-fill-color: whitesmoke;
 }
 
 #rich {
@@ -270,6 +277,23 @@
 
 #US {
     background-image: url("../img/US.jpg");
+    background-size: cover;
+}
+
+#TU {
+    background-image: url("../img/documents.jpg");
+    background-size: cover;
+}
+
+
+#TEHDOC {
+    background-image: url("../img/maxresdefault.jpg");
+    background-size: cover;
+}
+
+#SCHEME {
+    background-image: url("../img/tehnologicheskaya-dokumentaciya.jpg");
+    background-position: 20px;
     background-size: cover;
 }
 
@@ -784,4 +808,22 @@ select {
 .foto_ams_list img {
     border: dimgray solid 3px;
     height: 250px;
+}
+
+.coordinats table {
+    border: 0;
+    width: 340px;
+}
+
+.coordinats input {
+    width: 35px;
+    margin: 5px;
+}
+
+.coordinats table td {
+    border: 0;
+}
+
+.position_textarea {
+    resize: none;
 }

@@ -1,22 +1,380 @@
 {% extends "main/templates/layout.html" %}
-{% block title %}Список объектов{% endblock %}
+{% block title %}{{ i.object_name }}{% endblock %}
 {% block content %}
-    <a href="{% url 'main:objects' %}">
-    <button type="submit" value="Вернуться к списку">Вернутся к списку</button>
-    </a>
-    <table>
-       <tr>
-            <th>Наименование станции</th>
-            <th>Адрес</th>
-            <th>Район</th>
-            <th>Наименование линии связи</th>
-            <th>Цех</th>
-            <th>Участок</th>
-       </tr>
-            <tr>
-                <td><a href="{{ i.get_absolute_url  }}">{{ i.object_name }}</a></td>
-                <td>{{ name }}</td>
-                <td>{{ user }}</td>
-                <td>{{ time }}</td>
-            </tr>
+    <div class="button-bar">
+        <span>
+            <form action="{% url 'main:objects' %}">
+                <button type="submit" value="К списку">К списку</button>
+            </form>
+        </span>
+        <span>
+            {{ msg }}
+        </span>
+    </div>
+    <div class="content">
+        <div class="table">
+            <table>
+            <!----------------------------------------------------------------------------------------------->
+                <tr>
+                    <td><h3>Наименование объекта сети связи</h3></td>
+                    <td>
+                        {{ i.object_name }}
+                    </td>
+                    <td>
+                        <button onmousedown="showhide_changeform('change_object_name')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+            <!----------------------------------------------------------------------------------------------->
+                <tr>
+                    <td><h3>Участок связи</h3></td>
+                    <td>
+                        {{ i.uchastok.uchastok }}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_object_uchastok')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+            <!---------------------------------------------------------------------------------------------->
+                <tr>
+                    <td><h3>Цех связи</h3></td>
+                    <td colspan="2">
+                        {{ i.uchastok.ceh }}
+                    </td>
+                </tr>
+            <!--------------------------------------------------------------------------------------------->
+                <tr>
+                    <td><h3>Координаты объекта</h3></td>
+                    <td>
+                        {{ i.position.latitude_degrees }}°{{ i.position.latitude_minutes }}'
+                        {{ i.position.latitude_seconds }}" С.Ш.
+                        <br>
+                        {{ i.position.longitude_degrees }}°{{ i.position.longitude_minutes }}'
+                        {{ i.position.longitude_seconds }}" В.Д.
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_coordinats')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+                <tr>
+                    <td><h3>Адрес объекта</h3></td>
+                    <td>
+                        {% if i.position.address == None %}
+                            Не указан
+                        {% else %}
+                            {{ i.position.address }}
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_address')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+                <tr>
+                    <td><h3>Район размещения объекта</h3></td>
+                    <td>{% if i.position.district == None %}
+                            Не указан
+                        {% else %}
+                            {{ i.position.district }}
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('change_district')" class="change_button">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+            <!-------------------------------------------------------------------->
+                <tr>
+                    <td><h3>Фотографии объекта</h3></td>
+                    <td>{% if i.foto.all %}
+                            {% for f in i.foto.all %}
+                            <div class="foto_ams">
+                                <a href="{{ f.foto.url }}" target="_blank">
+                                    <img src="{{ f.foto.url }}">
+                                </a>
+                                <button onmousedown="showhide_changeform('foto_delete_{{ f.id }}')" class="foto_button">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                                <div class="foto_text">
+                                    {{ f.year.year }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            Отсутствуют
+                        {% endif %}
+                    </td>
+                    <td class="last_collumn">
+                        <button onmousedown="showhide_changeform('add_object_foto')" class="change_button">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+            <!-------------------------------------------------------------------->
+                <tr>
+                    <td><h3>АМС</h3></td>
+                    {% if i.ams %}
+                        <td colspan="2" align="center">
+                        <a href="{{ i.ams.get_absolute_url }}"><i class="fa-solid fa-tower-cell"></i></a>
+                        </td>
+                    {% else %}
+                        <td colspan="2">
+                        Отсутствует
+                        </td>
+                    {% endif %}
+                </tr>
+            <!-------------------------------------------------------------------->
+                <tr>
+                    <td><h3>Замечания ОЗП</h3></td>
+                    {% if i.ozp.all %}
+                    <td align="center" colspan="2">
+                        <table class="inner">
+                            {% for f in i.ozp.all %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ f.get_absolute_url }}">
+                                            <i class="fa-regular fa-file-lines"></i>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        Замечание: {{ f.zamechanie_ozp }}
+                                    </td>
+                                    <td>
+                                        {% if f.zakrytie_date %}
+                                            Срок выполнения: {{ f.zakrytie_date }}
+                                        {% else %}
+                                            Срок не установлен
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if f.is_done %}
+                                            <img src="/static/main/img/Exclamation-Mark-Transparent-PNG.png" height="15" width="15">
+                                        {% else %}
+                                            <img src="/static/main/img/free-png.ru-39.png" height="15" width="15">
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </td>
+                    {% else %}
+                    <td colspan="2">
+                        Отсутствуют
+                    </td>
+                    {% endif %}
+                </tr>
+            <!-------------------------------------------------------------------->
+                <tr>
+                    <td><h3>РЭС</h3></td>
+                    <td  colspan="2">
+                    {% if i.res.all %}
+                    <table class="inner">
+                        {% for f in i.res.all %}
+                        <tr>
+                            <td>
+                                <a href="{{ f.get_absolute_url }}">
+                                    {{ f.name }}
+                                </a>
+                            </td>
+                            <td>
+                                {% if f.type %}
+                                 Тип РЭС: {{ f.type }}
+                                {% else %}
+                                Тип РЭС не установлен
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if f.related_registration %}
+                                    Регистрация -
+                                    <a href="{{ f.related_registration.doc.url }}">
+                                        <i class="fa-solid fa-file-lines"></i>
+                                    </a>
+                                {% else %}
+                                    РЭС не зарегистрирован
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                    {% else %}
+                        РЭС отсутствуют
+                    {% endif %}
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+                  <tr>
+                    <td><h3>РИЧ</h3></td>
+                    <td colspan="2">
+                        {% if i.is_rich %}
+                            <table class="inner">
+                                {% for f in rich %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ f.doc.url }}">
+                                                <i class="fa-regular fa-file-lines"></i>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            Дата окончания РИЧ: {{ f.end_date }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                        {% else %}
+                            Отсутствуют
+                        {% endif %}
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+                  <tr>
+                    <td><h3>Изменения внес</h3></td>
+                    <td colspan="2">
+                        {{ i.last_modify.first_name }} {{ i.last_modify.last_name }} {{ i.time_modify }}
+                    </td>
+                </tr>
+            <!-------------------------------------------------------------------->
+                <tr>
+                    <td colspan="2"><h3>Удалить запись</h3></td>
+                    <td align="center">
+                        <button onmousedown="showhide_changeform('delete_object')" class="close_button">
+                                    <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+<!------------------------------------------------change_object_name------------------------------------------------>
+        <div id="change_object_name" class="change_form_ozp">
+            <form method="post" action="{% url 'main:change_object_name' i.id %}" id="object_name" >
+                {% csrf_token %}
+                Для изменения введите новое наименование объекта:
+                <br>
+                {{ name_form.object_name }}
+                <br>
+                <input type="submit" value="Изменить">
+                <button onmousedown="showhide_changeform('change_object_name')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+    <!----------------------------------------------------------------------------------------------->
+    <!------------------------------------------------change_object_uchastok-------------------------------------->
+        <div id="change_object_uchastok" class="change_form_ozp">
+            <form method="post" action="{% url 'main:change_object_uchastok' i.id %}" id="text_zamechanya" >
+                {% csrf_token %}
+                Выберите участок связи эксплуатирующий объект:
+                {{ uchastok_form.uchastok }}
+                <input type="submit" value="Изменить">
+                <button onmousedown="showhide_changeform('change_object_uchastok')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+    <!----------------------------------------------------------------------------------------------->
+    <!------------------------------------------------change_coordinats-------------------------------------->
+        <div id="change_coordinats" class="change_form_ozp">
+            <form method="post" action="{% url 'main:change_coordinats' i.id %}">
+                {% csrf_token %}
+                Укажите координаты объекта:
+                <div class="coordinats">
+                <table>
+                <tr>
+                    <td>Северной широты:</td>
+                    <td>{{ coord_form.latitude_degrees }}°{{ coord_form.latitude_minutes }}'{{ coord_form.latitude_seconds }}"</td>
+                </tr>
+                <tr>
+                    <td>Восточной долготы:</td>
+                    <td>{{ coord_form.longitude_degrees }}°{{ coord_form.longitude_minutes }}'{{ coord_form.longitude_seconds }}"</td>
+                </tr>
+                </table>
+            </div>
+                <input type="submit" value="Изменить">
+                <button onmousedown="showhide_changeform('change_coordinats')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+    <!----------------------------------------------------------------------------------------------->
+    <!------------------------------------------------change_address---------------------------------------->
+        <div id="change_address" class="change_form_ozp">
+            <form method="post" action="{% url 'main:change_address' i.id %}">
+                {% csrf_token %}
+                Изменить адрес объекта:
+                <br>
+                {{ address_form.address }}
+                <br>
+                <input type="submit" value="Изменить">
+                <button onmousedown="showhide_changeform('change_address')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+    <!----------------------------------------------------------------------------------------------->
+    <!------------------------------------------------change_district---------------------------------------->
+        <div id="change_district" class="change_form_ozp">
+            <form method="post" action="{% url 'main:change_district' i.id %}">
+                Изменить район размещения объекта:
+                <br>
+                {% csrf_token %}
+                {{ district_form.district }}
+                <input type="submit" value="Изменить">
+                <button onmousedown="showhide_changeform('change_district')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+    <!------------------------------------------------add_object_foto---------------------------------------->
+        <div id="add_object_foto" class="change_form_ozp">
+            <form method="post" action="{% url 'main:add_object_foto' i.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                Добавить фотографию:
+                {{ foto_form.as_p }}
+                <input type="submit" value="Добавить">
+                <button onmousedown="showhide_changeform('add_object_foto')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+    <!----------------------------------------------------------------------------------------------->
+    <!------------------------------------------------foto_object_delete------------------------------------------->
+        {% for f in i.foto.all %}
+            <div id="foto_delete_{{ f.id }}" class="change_form_ozp">
+                <form method="post" action="{% url 'main:foto_object_delete' f.id %}">
+                    {% csrf_token %}
+                    Вы действительно хотите удалить фотографию???
+                    <br>
+                    <input type="submit" value="Удалить">
+                    <button onmousedown="showhide_changeform('foto_delete_{{ f.id }}')" class="close_button">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </form>
+            </div>
+        {% endfor %}
+    <!----------------------------------------------------------------------------------------------->
+    <!------------------------------------------delete_object----------------------------------------------------->
+        <div id="delete_object" class="change_form_ozp">
+            <form method="post" action="{% url 'main:delete_object' i.id %}">
+                {% csrf_token %}
+                Вы действительно хотите удалить запись???
+                <br><br>
+                <input type="submit" value="Удалить">
+                <button onmousedown="showhide_changeform('delete_object')" class="close_button">
+                <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+    <!----------------------------------------------------------------------------------------------->
+
+    </div>
 {% endblock %}

@@ -453,12 +453,12 @@
 <!------------------------------------------------foto_ams_delete------------------------------------------->
         {% for f in i.foto.all %}
             <div id="foto_delete_{{ f.id }}" class="change_form_ozp">
-                <form method="post" action="{% url 'ams:foto_delete' f.id %}">
+                <form method="post" action="{% url 'ams:foto_delete' f.id %}" id="delete_form">
                     {% csrf_token %}
                     Вы действительно хотите удалить фотографию???
                     <br><br>
-                    <input type="submit" value="Удалить">
-                    <button onmousedown="showhide_changeform('foto_delete_{{ i.id }}')" class="close_button">
+                    <input type="submit" value="Удалить" form="delete_form">
+                    <button onmousedown="showhide_changeform('foto_delete_{{ f.id }}')" class="close_button">
                     <i class="fa-solid fa-xmark"></i>
                     </button>
                 </form>

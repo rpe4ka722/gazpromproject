@@ -8,9 +8,10 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from openpyxl import Workbook
 
-from main.scripts import form_errors_text, is_staff
-from main.views import department_filter
+from main.forms import FilterForm
+from main.scripts import form_errors_text, is_staff, object_filter
 from main.models import Object, Department
+from main.views import department_filter
 from rich.forms import ResForm, RichForm, RegistrationForm, ResNameForm, ResClassForm, RegForm, TypeForm, \
     ResProtokolForm
 from rich.models import Rich, Res, Registration, Type, ResProtokol
@@ -23,51 +24,19 @@ def rich_app_index(request):
 
 @login_required(login_url='account:login')
 def rich_index(request):
-    # получение списков данных для меню выбора -------------------
-    dep = Department.objects.all()
-    ceh_list = []
-    uchastok_list = []
-    for i in dep:
-        if i.ceh in ceh_list:
-            pass
-        else:
-            ceh_list.append(i.ceh)
-        if i.uchastok in uchastok_list:
-            pass
-        else:
-            uchastok_list.append(i.uchastok)
+    filter_form = FilterForm()
     type = Type.objects.all()
     # --------------------------------------------------------------
     # получение введенных в фильр данных -------------------------------------------
     if request.GET:
-        ceh = request.GET['ceh']
-        uchastok = request.GET['uchastok']
-        object = request.GET['object']
-        is_active = request.GET['is_active']
-        type_res = request.GET['type_res']
-        equip_name = request.GET['equip_name']
-        frequency_range = request.GET['frequency_range']
-        # фильтрация по поздразделениям-----------------------------------------------
-        filtered_by = []
-        # пустой список для вывода критериев фильтрации
-        if ceh == 'all' and uchastok == 'all':
-            filtered_res_objects = Res.objects.all()
-            object_list = Object.objects.all()
-        else:
-            filtered_departments = department_filter(ceh, uchastok)[0]
-            filtered_by.extend(department_filter(ceh, uchastok)[1])
-            filtered_objects = Object.objects.filter(uchastok__in=filtered_departments)
-            object_list = filtered_objects
-            filtered_res_objects = Res.objects.filter(related_object__in=filtered_objects)
-        # фильтрация по объектам сети-----------------------------------------------
-        if object != 'all':
-            filtered_object = Object.objects.filter(object_name=object)
-            filtered_res_objects = Res.objects.filter(related_object__in=filtered_object).\
-                select_related('related_object', 'related_rich','related_registration', 'type').\
-                prefetch_related('protokol')
-            filtered_by.append(str(object))
-        else:
-            pass
+        data = FilterForm(request.GET or None)
+        objects, filtered_by = object_filter(data)
+        is_active = request.GET.get('is_active')
+        type_res = request.GET.get('type_res')
+        equip_name = request.GET.get('equip_name')
+        frequency_range = request.GET.get('frequency_range')
+        # фильтрация по объектам сети----------------------------------------------
+        filtered_res_objects = Res.objects.filter(related_object__in=objects)
         # фильтрация по активным -----------------------------------------------------
         if is_active == '1':
             filtered_by.append('Действующим')
@@ -76,10 +45,10 @@ def rich_index(request):
             filtered_by.append('Проектируемым')
             filtered_res_objects = filtered_res_objects.filter(is_active=False)
         else:
-            filtered_by_is_active = ''
+            pass
         # -----------------------------------------------------------------------------
         # фильтрация по типу -----------------------------------------------------
-        if type_res == 'all':
+        if type_res == 'all' or type_res is None:
             pass
         else:
             filtered_by.append(str(type_res))
@@ -87,7 +56,7 @@ def rich_index(request):
             filtered_res_objects = filtered_res_objects.filter(type__in=filtered_by_type_set)
         # -----------------------------------------------------------------------------
         # фильтрация по наименованию оборудования -------------------------------------
-        if equip_name == 'all':
+        if equip_name == 'all' or equip_name is None:
             pass
         else:
             filtered_by.append(str(equip_name))
@@ -95,7 +64,7 @@ def rich_index(request):
             filtered_res_objects = filtered_res_objects.filter(type__in=filtered_by_equipment_set)
         # -----------------------------------------------------------------------------
         # фильтрация по диапазону -----------------------------------------------------
-        if frequency_range == 'all':
+        if frequency_range == 'all' or frequency_range is None:
             pass
         else:
             filtered_by.append('Диапазону ' + str(frequency_range))
@@ -103,16 +72,15 @@ def rich_index(request):
             filtered_res_objects = filtered_res_objects.filter(type__in=filtered_by_frequency_set)
         # -----------------------------------------------------------------------------
         filtered_by_str = ' '.join(filtered_by)
-        context = {'objects': object_list, 'ceh': ceh_list, 'uchastok': uchastok_list, 'filtered_by': filtered_by_str,
+        context = {'filtered_by': filtered_by_str, 'filter_form': filter_form,
                    'object': filtered_res_objects, 'type_list': type}
         return render(request, "rich/templates/rich_index.html", context)
     else:
         filtered_res_objects = Res.objects.all().select_related('related_object', 'related_rich','related_registration',
                                                                 'type').prefetch_related('protokol')
-        object_list = Object.objects.all()
         filtered_by = ''
-        context = {'objects': object_list, 'ceh': ceh_list, 'uchastok': uchastok_list, 'filtered_by': filtered_by,
-                   'object': filtered_res_objects, 'type_list': type}
+        context = {'filter_form': filter_form, 'filtered_by': filtered_by, 'object': filtered_res_objects,
+                   'type_list': type}
         return render(request, "rich/templates/rich_index.html", context)
 
 
@@ -335,79 +303,40 @@ def antenna_polarization_change(request, id):
 
 @login_required(login_url='account:login')
 def rich_list(request, msg=''):
-    # получение списков данных для меню выбора -------------------
-    dep = Department.objects.all()
-    ceh_list = []
-    uchastok_list = []
-    for i in dep:
-        if i.ceh in ceh_list:
-            pass
-        else:
-            ceh_list.append(i.ceh)
-        if i.uchastok in uchastok_list:
-            pass
-        else:
-            uchastok_list.append(i.uchastok)
-    # --------------------------------------------------------------
     # получение введенных в фильр данных -------------------------------------------
-    if request.GET:
-        ceh = request.GET['ceh']
-        uchastok = request.GET['uchastok']
-        object = request.GET['object']
-        is_active = request.GET['is_active']
-        srok_this_year = request.GET['srok_this_year']
+    filter_form = FilterForm()
+    if request.method == 'GET':
+        data = FilterForm(request.GET or None)
+        objects, filtered_by = object_filter(data)
+        is_active = request.GET.get('is_active')
+        srok_this_year = request.GET.get('srok_this_year')
         # фильтрация по поздразделениям-----------------------------------------------
-        if ceh == 'all' and uchastok == 'all':
-            filtered_rich_objects = Rich.objects.all()
-            filtered_by_department = ''
-            object_list = Object.objects.all()
-        else:
-            filtered_departments = department_filter(ceh, uchastok)[0]
-            filtered_by_department = " ".join(department_filter(ceh, uchastok)[1])
-            filtered_objects = Object.objects.filter(uchastok__in=filtered_departments)
-            object_list = filtered_objects
-            filtered_res = Res.objects.filter(related_object__in=filtered_objects)
-            filtered_rich_objects = Rich.objects.filter(related_res__in=filtered_res).distinct()
-        # фильтрация по объектам сети-----------------------------------------------
-        if object != 'all':
-            filtered_object = Object.objects.filter(object_name=object)
-            filtered_res = Res.objects.filter(related_object__in=filtered_object)
-            filtered_rich_objects = Rich.objects.filter(related_res__in=filtered_res).distinct()
-            filtered_by_object = object
-        else:
-            filtered_by_object = ''
+        filtered_res = Res.objects.filter(related_object__in=objects)
+        filtered_rich_objects = Rich.objects.filter(related_res__in=filtered_res).distinct()
         # фильтрация по активным -----------------------------------------------------
         if is_active == '1':
-            filtered_by_is_active = 'Действующим'
+            filtered_by.append('Действующим')
             filtered_rich_objects = filtered_rich_objects.filter(is_active=True)
         elif is_active == '0':
-            filtered_by_is_active = 'Недействительным'
+            filtered_by.append('Недействительным')
             filtered_rich_objects = filtered_rich_objects.filter(is_active=False)
         else:
-            filtered_by_is_active = ''
+            pass
         # -----------------------------------------------------------------------------
         # фильтрация сроку в течении года ----------------------------------------
         if srok_this_year == '1':
-            filtered_by_srok_this_year = 'Сроку окончания действия менее года'
+            filtered_by.append('Сроку окончания действия менее года')
             filtered_rich_objects = filtered_rich_objects.filter(end_date__lt=(date.today() + timedelta(days=365)))
         else:
-            filtered_by_srok_this_year = ''
-        # -------------------------------------------------------------------
-        filtered_by = ' '.join([filtered_by_department, filtered_by_object, filtered_by_is_active,
-                                filtered_by_srok_this_year])
-        if filtered_by != '    ':
             pass
-        else:
-            filtered_by = ''
-        context = {'objects': object_list, 'ceh': ceh_list, 'uchastok': uchastok_list, 'filtered_by': filtered_by,
-                   'object': filtered_rich_objects}
+        # -------------------------------------------------------------------
+        filtered_by_str = ' '.join(filtered_by)
+        context = {'filtered_by': filtered_by_str, 'object': filtered_rich_objects, 'filter_form': filter_form}
         return render(request, "rich/templates/rich_list.html", context)
     else:
         object = Rich.objects.all().prefetch_related()
         filtered_by = str('')
-        objects_list = Object.objects.all()
-        context = {'objects': objects_list, 'ceh': ceh_list, 'uchastok': uchastok_list, 'filtered_by': filtered_by,
-                   'object': object, 'msg': msg}
+        context = {'filtered_by': filtered_by, 'object': object, 'msg': msg, 'filter_form': filter_form}
         return render(request, "rich/templates/rich_list.html", context)
 
 

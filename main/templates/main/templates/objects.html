@@ -8,9 +8,12 @@
             </form>
         </span>
         <span>
-            <form action="{% url 'main:export_objects'  %}">
+            <a href="{% url 'main:export_objects'  %}?{{ request.GET.urlencode }}">
                 <button type="submit" value="Создать">Выгрузить</button>
-            </form>
+            </a>
+        </span>
+        <span>
+            {{ msg }}
         </span>
         <div id="filter-button">
             <span>
@@ -20,9 +23,23 @@
             <button type="submit" form="filter_reset" value="Сбросить" >Сбросить</button>
             <input type="button" value="Фильтр" onmousedown="showhide('filter')" id="filter-button-dynamic">
             <form id="filter_reset">
-                <a href={% url 'main:structure' %}>
+                <a href={% url 'main:objects' %}>
                 </a>
             </form>
+        </div>
+        <div id="filter">
+            <div class="filter-content">
+            <form id="filter_form" method="get" action="{% url 'main:objects' %}">
+                    {{ filter_form.as_p }}
+            </form>
+            </div>
+            <div id="filter-button-bar">
+                <button type="submit" form="filter_form" value="Применить">Применить</button>
+            </div>
+        <!-----------------------------------------ajax------------------------------------------------------------>
+            <script src="/static/main/script/jquery.js"></script>
+            <script src="/static/main/script/filter.js"></script>
+        <!-----------------------------------------ajax------------------------------------------------------------>
         </div>
     </div>
     <div id="filter">
@@ -46,45 +63,100 @@
         <div class="table">
             <table>
                <tr>
-                    <th>Наименование станции</th>
-                    <th>Цех</th>
-                    <th>Участок</th>
+                    <th>Объект</th>
+                    <th>Подразделение</th>
                     <th>Координаты<br>С.Ш.<br>В.Д.</th>
-                    <th>Адрес</th>
-                    <th>Район</th>
-                    <th>Наименование линии связи</th>
                     <th>АМС</th>
                     <th>ОЗП</th>
+                    <th>РЭС</th>
                     <th>РИЧ</th>
+                    <th>Технические условия</th>
+                    <th>Техническая документация</th>
+                    <th>Схемы</th>
+                    <th>Фотографии</th>
                </tr>
            <tr>
             {% if objectlist %}
                 {% for i in objectlist %}
                     <tr>
                         <td><a href="{{ i.get_absolute_url  }}">{{ i.object_name }}</a></td>
-                        <td>{{ i.uchastok.ceh }}</td>
-                        <td>{{ i.uchastok.uchastok }}</td>
+                        <td>{{ i.uchastok.ceh }} {{ i.uchastok.uchastok }}</td>
                         <td align="center">{{ i.position.latitude_degrees }}°{{ i.position.latitude_minutes }}'
                             {{ i.position.latitude_seconds }}" <br>{{ i.position.longitude_degrees }}°{{ i.position.longitude_minutes }}'
                             {{ i.position.longitude_seconds }}"</td>
-                        <td>{{ i.position.address }}</td>
-                        <td>{{ i.position.district }}</td>
-                        <td>{{ i.rrl_line.rrl_line_name }}</td>
                         <td align="center">
-                            <form action="{% url 'main:change_object' i.pk %}">
-                            <button>Изменить</button>
-                            </form>
+                            {% if i.ams %}
+                                <a href="{{ i.ams.get_absolute_url }}"><i class="fa-solid fa-tower-cell"></i></a>
+                            {% else %}
+                                -
+                            {% endif %}
                         </td>
                         <td align="center">
-                            <form method="post" action="{% url 'main:delete_object' i.pk %}">
-                            {% csrf_token %}
-                            <button type="submit">Удалить</button>
-                            </form>
+                            {% if i.ozp.all %}
+                                <a href="{% url 'main:ozp' %}?object={{ i }}"><i class="fa-solid fa-snowflake"></i>
+                                </a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td align="center">
+                            {% if i.res.all %}
+                                <a href="{% url 'rich:rich_index' %}?object={{ i }}">
+                                    <i class="fa-solid fa-rss"></i>
+                                </a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td align="center">
+                            {% if i.is_rich %}
+                                <a href="{% url 'rich:rich_list' %}?object={{ i }}">
+                                    <i class="fa-solid fa-file-lines"></i>
+                                </a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td align="center">
+                            {% if i.tu.all %}
+                                <a href="{% url 'main:tu_list' %}?object={{ i }}">
+                                    <i class="fa-solid fa-folder"></i>
+                                </a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td align="center">
+                            {% if i.tehdoc.all %}
+                                <a href="{% url 'main:tehdoc_list' %}?object={{ i }}">
+                                    <i class="fa-solid fa-folder"></i>
+                                </a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td align="center">
+                            {% if i.scheme.all %}
+                                <a href="{% url 'main:scheme_list' %}?object={{ i }}">
+                                    <i class="fa-solid fa-folder"></i>
+                                </a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td align="center">
+                            {% if i.foto.all %}
+                                <a href="{% url 'main:object_foto_list' %}?object={{ i }}">
+                                    <i class="fa-solid fa-folder"></i>
+                                </a>
+                            {% else %}
+                                -
+                            {% endif %}
                         </td>
                     </tr>
                 {% endfor %}
             {% else %}
-                <p>No polls are available.</p>
+                <p>Записи с заданными критериями поиска отсутствуют</p>
             {% endif %}
             </table>
         </div>

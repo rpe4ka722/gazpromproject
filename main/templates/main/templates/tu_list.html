@@ -1,0 +1,122 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Технические условия{% endblock %}
+{% block content %}
+    <div class="button-bar">
+        <span>
+            <form action="{% url 'main:tu_create' %}">
+                <button type="submit" value="Создать">Создать запись</button>
+            </form>
+        </span>
+        <div id="filter-button">
+            <span>
+                {% if filtered_by == '' %} Фильтрация отсутствует.
+                {% else %} Объекты отфильтрованы по: {{ filtered_by }}</span>
+                {% endif %}
+            <button type="submit" form="filter_reset" value="Сбросить" >Сбросить</button>
+            <input type="button" value="Фильтр" onmousedown="showhide('filter')" id="filter-button-dynamic">
+            <form id="filter_reset">
+                <a href={% url 'main:tu_list' %}>
+                </a>
+            </form>
+        </div>
+    </div>
+    <div id="filter">
+            <div class="filter-content">
+            <form id="filter_form" method="get" action="{% url 'main:tu_list' %}">
+                    {{ filter_form.as_p }}
+                    <span>Фильтровать по контрагенту:</span>
+                    <p>
+                        <select name="organization" form="filter_form">
+                            <option value="all" selected>Показать все</option>
+                            {% for i in object_list %}
+                                <option value="{{ i.organization }}">{{ i.organization }}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                    <span>Фильтровать по действующим:</span>
+                    <p>
+                        <select name="is_active" form="filter_form">
+                            <option value="all" selected>Показать все</option>
+                            <option value="1">Показать только действующие</option>
+                            <option value="0">Показать только недействительные</option>
+                        </select>
+                    </p>
+            </form>
+            </div>
+            <div id="filter-button-bar">
+                <button type="submit" form="filter_form" value="Применить">Применить</button>
+            </div>
+    <!-----------------------------------------ajax------------------------------------------------------------>
+        <script src="/static/main/script/jquery.js"></script>
+        <script src="/static/main/script/filter.js"></script>
+    <!-----------------------------------------ajax------------------------------------------------------------>
+    </div>
+    <div class="content">
+        <!-------------------------------------------------------------------->
+        {% for i in object_list %}
+        <div id="delete_tu_{{ i.id }}" class="change_form_ozp">
+            <form method="post" action="{% url 'main:delete_tu' i.id %}">
+                {% csrf_token %}
+                Вы действительно хотите удалить запись???
+                <br><br>
+                <input type="submit" value="Удалить">
+                <button onmousedown="showhide_changeform('delete_tu_{{ i.id }}')" class="close_button">
+                <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+        <!-------------------------------------------------------------------->
+        <div class="table">
+            <table>
+                <tr class="head_row">
+                    <th>Объект</th>
+                    <th>Наименование проекта</th>
+                    <th>Наименование ТУ</th>
+                    <th>Контрагент</th>
+                    <th>Дата выдачи</th>
+                    <th>Статус</th>
+                    <th>Копия ТУ</th>
+                    <th>Краткое описание</th>
+                    <th>Удалить</th>
+                </tr>
+                {% if object_list %}
+                    {% for i in object_list %}
+                        <tr class="table_row">
+                            <td><a href="{{ i.object.get_absolute_url }}" class="ozp-link">
+                                {{ i.object }}
+                                </a>
+                            </td>
+                            <td>{{ i.proekt }}</td>
+                            <td>{{ i.name }}</td>
+                            <td>{{ i.organization }}</td>
+                            <td>{{ i.date }}</td>
+                            <td align="center">
+                                {% if i.is_active %}
+                                    <img src="/static/main/img/free-png.ru-39.png" height="20" width="20" alt="Действует">
+                                {% else %}
+                                    <img src="/static/main/img/free-png.ru-388.png" height="20" width="20">
+                                {% endif %}
+                            </td>
+                            <td align="center">
+                                <a href="{{ i.doc.url }}" class="ozp-link" target="_blank">
+                                <i class="fa-solid fa-file"></i>
+                                </a>
+                            </td>
+
+                            <td>{{ i.description }}</td>
+                            <td align="center">
+                                <button onmousedown="showhide_changeform('delete_tu_{{ i.id }}')" class="close_button">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                {% else %}
+                    <p>Записи с заданными критериями поиска отсутствуют</p>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+{% endblock %}

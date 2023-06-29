@@ -8,13 +8,11 @@
               {{ form.as_p }}
             <button type="submit">Создать</button>
         </form>
-
-          <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-          <script>
+        <script src="/static/main/script/jquery.js"></script>
+        <script>
             $("#id_related_object").change(function () {
               var url = $("#regForm").attr("res-url");  // get the url of the `load_res` view
               var objectId = $(this).val();  // get the selected country ID from the HTML input
-
               $.ajax({                       // initialize an AJAX request
                 url: url,                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
                 data: {
@@ -25,7 +23,7 @@
                 }
               });
             });
-          </script>
+        </script>
         <p>{{ msg }}</p>
     </div>
 {% endblock %}

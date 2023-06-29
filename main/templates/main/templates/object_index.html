@@ -2,7 +2,7 @@
 {% block content %}
             <div class="button">
                 <a href="{% url 'main:objects' %}" id="link2">
-                <span class="button-text">Объекты</span>
+                <span class="button-text">Объекты Управления связи</span>
                 </a>
             </div>
             <div class="button">
@@ -12,7 +12,22 @@
             </div>
             <div class="button" >
                 <a href="{% url 'main:structure' %}" id="US">
-                <span class="button-text">Структура УС</span>
+                <span class="button-text">Пользователи</span>
+                </a>
+            </div>
+            <div class="button" >
+                <a href="{% url 'main:tu_list' %}" id="TU">
+                <span class="button-text">Технические условия</span>
+                </a>
+            </div>
+            <div class="button" >
+                <a href="{% url 'main:tehdoc_list' %}" id="TEHDOC">
+                <span class="button-text">Техническая документация</span>
+                </a>
+            </div>
+            <div class="button" >
+                <a href="{% url 'main:scheme_list' %}" id="SCHEME">
+                <span class="button-text">Схемы</span>
                 </a>
             </div>
 {% endblock %}

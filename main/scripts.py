@@ -2,6 +2,7 @@ import pandas as pd
 from django.shortcuts import redirect, render
 
 from account.forms import LoginForm
+from main.models import Department, Object
 
 
 def column_dict(name, sheet_name=0, row_number=0):
@@ -62,3 +63,27 @@ def form_errors_text(form):
     for field in form:
         error_list.append(field.errors.as_text().replace('* ', ''))
     return ' '.join(error_list).strip()
+
+
+def object_filter(form):
+    try:
+        ceh = form.data.get('ceh')
+        uchastok = form.data.get('uchastok')
+        object = form.data.get('object')
+        filtered_by = []
+        if ceh != '' and ceh is not None:
+            department = Department.objects.filter(ceh=ceh, is_prod=True)
+            objects = Object.objects.filter(uchastok__in=department)
+            filtered_by.append(ceh)
+        elif uchastok != '' and uchastok is not None:
+            department = Department.objects.filter(uchastok=uchastok, is_prod=True)
+            objects = Object.objects.filter(uchastok__in=department)
+            filtered_by.append(uchastok)
+        elif object != '' and object is not None:
+            objects = Object.objects.filter(object_name__contains=object)
+            [filtered_by.append(str(i.object_name)) for i in objects]
+        else:
+            objects = Object.objects.all()
+        return objects, filtered_by
+    except (ValueError, TypeError):
+        pass

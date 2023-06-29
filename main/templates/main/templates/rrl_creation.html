@@ -1,15 +1,21 @@
 {% extends "main/templates/layout.html" %}
 {% block title %}Создание объекта{% endblock %}
 {% block content %}
-        <p>Для создания объекта заполните представленную форму:</p>
-            <form action="{% url 'main:create_rrl' %}" method="post">
-                <div>
-                    {{ form.as_p }}
-                    {% csrf_token %}
-                </div>
-                <div class="account-button">
-                    <input type="submit" value="Создать линию">
-                </div>
-            </form>
-        <p>{{ msg }}</p>
+        <div class="creation_form">
+            <div>
+                <h2>Для создания объекта заполните представленную форму:</h2>
+            </div>
+            <div>
+                <form action="{% url 'main:create_rrl' %}" method="post">
+                    <div>
+                        {{ form.as_p }}
+                        {% csrf_token %}
+                    </div>
+                    <div class="account-button">
+                        <input type="submit" value="Создать линию">
+                    </div>
+                </form>
+                <p>{{ msg }}</p>
+            </div>
+        </div>
 {% endblock %}

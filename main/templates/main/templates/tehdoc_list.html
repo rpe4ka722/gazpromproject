@@ -1,0 +1,91 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Список объектов{% endblock %}
+{% block content %}
+    <div class="button-bar">
+        <span>
+            <form action="{% url 'main:tehdoc_create' %}">
+                <button type="submit" value="Создать">Создать запись</button>
+            </form>
+        </span>
+        <div id="filter-button">
+            <span>
+                {% if filtered_by == '' %} Фильтрация отсутствует.
+                {% else %} Объекты отфильтрованы по: {{ filtered_by }}</span>
+                {% endif %}
+            <button type="submit" form="filter_reset" value="Сбросить" >Сбросить</button>
+            <input type="button" value="Фильтр" onmousedown="showhide('filter')" id="filter-button-dynamic">
+            <form id="filter_reset">
+                <a href={% url 'main:tehdoc_list' %}>
+                </a>
+            </form>
+        </div>
+    </div>
+    <div id="filter">
+            <div class="filter-content">
+            <form id="filter_form" method="get" action="{% url 'main:tehdoc_list' %}">
+                    {{ filter_form.as_p }}
+            </form>
+            </div>
+            <div id="filter-button-bar">
+                <button type="submit" form="filter_form" value="Применить">Применить</button>
+            </div>
+    <!-----------------------------------------ajax------------------------------------------------------------>
+        <script src="/static/main/script/jquery.js"></script>
+        <script src="/static/main/script/filter.js"></script>
+    <!-----------------------------------------ajax------------------------------------------------------------>
+    </div>
+    <div class="content">
+        <!-------------------------------------------------------------------->
+        {% for i in object_list %}
+        <div id="delete_tehdoc_{{ i.id }}" class="change_form_ozp">
+            <form method="post" action="{% url 'main:delete_tehdoc' i.id %}">
+                {% csrf_token %}
+                Вы действительно хотите удалить запись???
+                <br><br>
+                <input type="submit" value="Удалить">
+                <button onmousedown="showhide_changeform('delete_tehdoc_{{ i.id }}')" class="close_button">
+                <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+        <!-------------------------------------------------------------------->
+        <div class="table">
+            <table>
+                <tr class="head_row">
+                    <th>Объект</th>
+                    <th>Наименование документа</th>
+                    <th>Дата документа</th>
+                    <th>Копия документа</th>
+                    <th>Краткое описание</th>
+                    <th>Удалить</th>
+                </tr>
+                {% if object_list %}
+                    {% for i in object_list %}
+                        <tr class="table_row">
+                            <td><a href="{{ i.object.get_absolute_url }}" class="ozp-link">
+                                {{ i.object }}
+                                </a>
+                            </td>
+                            <td>{{ i.name }}</td>
+                            <td>{{ i.date }}</td>
+                            <td align="center">
+                                <a href="{{ i.doc.url }}" class="ozp-link" target="_blank">
+                                <i class="fa-solid fa-file"></i>
+                                </a>
+                            </td>
+                            <td>{{ i.description }}</td>
+                            <td align="center">
+                                <button onmousedown="showhide_changeform('delete_tehdoc_{{ i.id }}')" class="close_button">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <p>Записи с заданными критериями поиска отсутствуют</p>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+{% endblock %}

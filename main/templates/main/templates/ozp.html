@@ -28,24 +28,7 @@
     <div id="filter">
             <div class="filter-content">
                 <form id="filter_form" method="get" action={% url 'main:ozp' %}>
-                    <span>Фильтровать по цеху:</span>
-                    <p>
-                        <select name="ceh" form="filter_form">
-                            <option value="all">Все</option>
-                            {% for i in ceh %}
-                                <option value="{{ i }}">{{ i }}</option>
-                            {% endfor %}
-                        </select>
-                    </p>
-                    <span>Фильтровать по участку:</span>
-                    <p>
-                        <select name="uchastok" form="filter_form">
-                            <option value="all">Все</option>
-                            {% for i in uchastok %}
-                               <option value="{{ i }}">{{ i }}</option>
-                            {% endfor %}
-                        </select>
-                    </p>
+                    {{ filter_form.as_p }}
                     <span>Фильтровать по выполненным:</span>
                     <p>
                         <select name="vipolnenie" form="filter_form">
@@ -65,7 +48,7 @@
                     <span>Фильтровать по году выполнения:</span>
                     <p>
                         {% for i in year %}
-                        <input type="checkbox" name="year_{{ i }}" value={{ i }} checked>{{ i }}
+                        <input type="checkbox" name="year_{{ i }}" value="{{ i }}" checked>{{ i }}
                         {% endfor %}
                     </p>
                     <span>Фильтровать по замечаниям которые необходимо выполнить в течении месяца:</span>
@@ -80,6 +63,10 @@
             <div id="filter-button-bar">
                 <button type="submit" form="filter_form" value="Применить">Применить</button>
             </div>
+        <!-----------------------------------------ajax------------------------------------------------------------>
+        <script src="/static/main/script/jquery.js"></script>
+        <script src="/static/main/script/filter.js"></script>
+    <!-----------------------------------------ajax------------------------------------------------------------>
     </div>
     <div class="content">
         <div class="table">

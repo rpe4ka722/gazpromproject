@@ -2,19 +2,24 @@ from datetime import datetime, timedelta
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
+from openpyxl.styles.numbers import BUILTIN_FORMATS
 
 from account.forms import UserCreationForm
 from account.models import Userprofile
-from main.scripts import is_staff, form_errors_text
+from main.scripts import is_staff, form_errors_text, object_filter
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
-from .forms import ObjectForm, RrlForm, PositionForm, UploadXlsForm, UploadChoiceForm, ImportForm, DepartmentForm
+from rich.models import Rich, Res
+from .forms import ObjectForm, RrlForm, PositionForm, UploadXlsForm, UploadChoiceForm, ImportForm, FilterForm, \
+    Tu_Create_Form, Tehdoc_Create_Form, Scheme_Create_Form, Object_Name_Form, Object_Uchastok_Form, Coordinat_Form, \
+    Object_Address_Form, Object_District_Form, Object_Foto_Form, List_Foto_Form
 from .models import Object, Position, RrlLine, Sheet, Header, UploadedData, Choice, Department, Ozp, \
-    Foto_zamechanya, Foto_vipolnenya, Podano_na_vipolnenie
+    Foto_zamechanya, Foto_vipolnenya, Podano_na_vipolnenie, Technicheskie_usloviya, Technicheskaya_documentacia, \
+    Scheme, Object_Foto
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Border, Side, Alignment, Font
 
@@ -34,9 +39,9 @@ def object_index(request):
 @login_required(login_url='account:login')
 @is_staff
 def create_object(request):
+    obj_form = ObjectForm(request.POST or None)
+    pos_form = PositionForm(request.POST or None)
     if request.method == 'POST':
-        obj_form = ObjectForm(request.POST)
-        pos_form = PositionForm(request.POST)
         if obj_form.is_valid() and pos_form.is_valid():
             cd_obj = obj_form.cleaned_data
             cd_pos = pos_form.cleaned_data
@@ -51,12 +56,11 @@ def create_object(request):
             obj = Object(object_name=cd_obj['object_name'], position=pos, rrl_line=cd_obj['rrl_line'],
                          uchastok=cd_obj['uchastok'], last_modify=user, time_modify=time)
             obj.save()
-            return redirect('/')
+            return redirect('main:object_detail', obj.id)
         else:
-            msg = 'Введенные данные некорректны'
+            msg = 'Веденные данные некорректны'
             return render(request, "main/templates/object_creation.html", {'obj_form': obj_form,
                                                                            'pos_form': pos_form, 'msg': msg})
-
     else:
         obj_form = ObjectForm()
         pos_form = PositionForm()
@@ -84,18 +88,40 @@ def create_rrl(request):
 
 
 @login_required(login_url='account:login')
-def objects_list(request):
-    objectslist = Object.objects.all()
-    position = Position.objects.all()
-    context = {'objectlist': objectslist, 'position': position}
-    return render(request, 'main/templates/objects.html', context)
+def objects_list(request, msg=''):
+    filter_form = FilterForm()
+    objectslist = Object.objects.select_related('uchastok', 'position').prefetch_related('ams', 'ozp', 'res', 'tehdoc',
+                                                                                         'tu', 'scheme', 'foto').all
+    if request.method == 'GET':
+        try:
+            data = FilterForm(request.GET or None)
+            objects, filtered_by = object_filter(data)
+            filtered_by_str = ' '.join(filtered_by)
+            objectslist = objects.select_related('uchastok', 'position').prefetch_related('ams', 'ozp', 'res', 'tehdoc',
+                                                                                          'tu', 'scheme', 'foto')
+            context = {'objectlist': objectslist, 'msg': msg, 'filter_form': filter_form,
+                       'filtered_by': filtered_by_str}
+            return render(request, 'main/templates/objects.html', context)
+        except (ValueError, TypeError):
+            filtered_by = ''
+            context = {'objectlist': objectslist, 'msg': msg, 'filter_form': filter_form,
+                       'filtered_by': filtered_by}
+            return render(request, 'main/templates/objects.html', context)
 
 
 @login_required(login_url='account:login')
-def object_detail(request, name):
+def object_detail(request, name: int, msg=''):
     selected_object = Object.objects.get(id=name)
-    full_name = selected_object.last_modify.first_name + ' ' + selected_object.last_modify.last_name
-    context = {'name': selected_object.object_name, 'user': str(full_name), 'time': selected_object.time_modify}
+    selected_rich = Rich.objects.filter(related_res__in=Res.objects.filter(related_object=selected_object)).distinct()
+    name_form = Object_Name_Form()
+    uchastok_form = Object_Uchastok_Form()
+    coord_form = Coordinat_Form()
+    address_form = Object_Address_Form()
+    district_form = Object_District_Form()
+    foto_form = Object_Foto_Form()
+    context = {'i': selected_object, 'rich': selected_rich, 'name_form': name_form, 'msg': msg,
+               'uchastok_form': uchastok_form, 'coord_form': coord_form, 'address_form': address_form,
+               'district_form': district_form, 'foto_form': foto_form}
     return render(request, 'main/templates/object_detail.html', context)
 
 
@@ -321,11 +347,6 @@ def rrl_line(request):
 
 
 @login_required(login_url='account:login')
-def export_rrl(requst):
-    pass
-
-
-@login_required(login_url='account:login')
 @is_staff
 def delete_rrl(request, pk):
     try:
@@ -361,7 +382,66 @@ def change_rrl(request, pk):
 
 @login_required(login_url='account:login')
 def export_objects(request):
-    pass
+    if request.method == 'GET':
+        try:
+            data = FilterForm(request.GET or None)
+            objects, filtered_by = object_filter(data)
+        except (ValueError, TypeError):
+            return redirect('main:objects', msg='Неизвестная ошибка')
+        # выгрузка в xls -----------------------------------------------------
+        response = HttpResponse(content_type='application/ms-excel')
+        response['Content-Disposition'] = 'attachment; filename="objects.xlsx"'
+        wb = Workbook()
+        rows = objects
+        ws = wb.active
+        row_num = 1
+        columns = ['Наименование объекта', 'Цех', 'Участок', 'Координаты объекта', 'Адрес', 'Район размещения объекта',
+                   'Магистральная линия']
+        font = Font(name='TimesNewRoman', sz=11, bold=True)
+        font2 = Font(name='TimesNewRoman', sz=11, bold=False)
+        border = Border(left=Side(border_style='thin', color='FF000000'),
+                        right=Side(border_style='thin', color='FF000000'),
+                        top=Side(border_style='thin', color='FF000000'),
+                        bottom=Side(border_style='thin', color='FF000000'))
+        alignment = Alignment(horizontal='center',
+                              vertical='center',
+                              text_rotation=0,
+                              wrap_text=True,
+                              shrink_to_fit=False,
+                              indent=0)
+        for col_num in range(len(columns)):
+            ws.cell(row_num, col_num + 1, columns[col_num])
+            ws.cell(row_num, col_num + 1).font = font
+            ws.cell(row_num, col_num + 1).border = border
+            ws.cell(row_num, col_num + 1).alignment = alignment
+        ws.column_dimensions['A'].width = 30
+        ws.column_dimensions['B'].width = 10
+        ws.column_dimensions['C'].width = 10
+        ws.column_dimensions['D'].width = 20
+        ws.column_dimensions['E'].width = 20
+        ws.column_dimensions['F'].width = 20
+        ws.column_dimensions['G'].width = 20
+        for row in range(rows.count()):
+            if rows[row].rrl_line is None:
+                atr_list = [rows[row].object_name, rows[row].uchastok.ceh, rows[row].uchastok.uchastok,
+                            f'{rows[row].position.latitude_degrees}° {rows[row].position.latitude_minutes}\' '
+                            f'{rows[row].position.latitude_seconds}" С.Ш. {rows[row].position.longitude_degrees}° '
+                            f'{rows[row].position.longitude_minutes}\' {rows[row].position.longitude_seconds}" В.Д.',
+                            rows[row].position.address, rows[row].position.district, '-']
+            else:
+                atr_list = [rows[row].object_name, rows[row].uchastok.ceh, rows[row].uchastok.uchastok,
+                            f'{rows[row].position.latitude_degrees}° {rows[row].position.latitude_minutes}\' '
+                            f'{rows[row].position.latitude_seconds}" С.Ш. {rows[row].position.longitude_degrees}° '
+                            f'{rows[row].position.longitude_minutes}\' {rows[row].position.longitude_seconds}" В.Д.',
+                            rows[row].position.address, rows[row].position.district, rows[row].rrl_line.rrl_line_name]
+            ws.cell(row + 2, 7).number_format = BUILTIN_FORMATS[1]
+            for col_num in range(len(atr_list)):
+                ws.cell(row + 2, col_num + 1, atr_list[col_num])
+                ws.cell(row + 2, col_num + 1).font = font2
+                ws.cell(row + 2, col_num + 1).border = border
+                ws.cell(row + 2, col_num + 1).alignment = alignment
+        wb.save(response)
+        return response
 
 
 @login_required(login_url='account:login')
@@ -397,17 +477,6 @@ def change_object(request, pk):
 
 @login_required(login_url='account:login')
 @is_staff
-def delete_object(reqest, pk):
-    try:
-        obj = Object.objects.get(id=pk)
-        obj.delete()
-        return redirect('main:objects')
-    except Department.DoesNotExist:
-        return HttpResponseNotFound("<h2>Not found</h2>")
-
-
-@login_required(login_url='account:login')
-@is_staff
 def ozp_create(request):
     objects = Object.objects.all()
     if request.method == 'POST':
@@ -415,7 +484,6 @@ def ozp_create(request):
         accepted_list = ('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')
         name = str(uploaded_file.name)
         associated_object = request.POST['associated_object']
-        print(associated_object)
         zamechanie_ozp = str(request.POST['zamechanie_ozp'])
         normative_documentation = str(request.POST['normative_documentation'])
         if name.endswith(accepted_list):
@@ -438,19 +506,8 @@ def ozp_create(request):
 def ozp(request):
     # получение списков данных для меню выбора -------------------
     objectslist = Ozp.objects.all()
-    dep = Department.objects.all()
-    ceh_list = []
-    uchastok_list = []
+    filter_form = FilterForm()
     year_list = []
-    for i in dep:
-        if i.ceh in ceh_list:
-            pass
-        else:
-            ceh_list.append(i.ceh)
-        if i.uchastok in uchastok_list:
-            pass
-        else:
-            uchastok_list.append(i.uchastok)
     for i in objectslist:
         try:
             year = i.zakrytie_date.year
@@ -462,82 +519,78 @@ def ozp(request):
             pass
     # --------------------------------------------------------------
     # получение введенных в фильр данных --------------------------
-    if request.GET:
-        ceh = request.GET['ceh']
-        uchastok = request.GET['uchastok']
-        vipolnenie = request.GET['vipolnenie']
-        na_vipolnenie = request.GET['na_vipolnenie']
-        year_filter = []
-        this_month = request.GET['this_month']
+    if request.method == 'GET':
+        data = FilterForm(request.GET or None)
+        objects, filtered_by = object_filter(data)
+        vipolnenie = request.GET.get('vipolnenie')
+        na_vipolnenie = request.GET.get('na_vipolnenie')
+        this_month = request.GET.get('this_month')
     # ------------------------------------------------------------------------
     # получение списка выбранных годов----------------------------------------
+        year_filter = []
         for i in year_list:
             q = ''.join(['year_', str(i)])
             try:
-                year_filter.append(request.GET[q])
+                value = request.GET.get(q)
+                if value is None:
+                    pass
+                else:
+                    year_filter.append(value)
             except KeyError:
                 pass
+        if not year_filter:
+            year_filter = year_list
     # -------------------------------------------------------------------------
     # фильтрация по объектам сети----------------------------------------------
-        filtered_departments = department_filter(ceh, uchastok)[0]
-        filtered_by_department = " ".join(department_filter(ceh, uchastok)[1])
-        filtered_objects = Object.objects.filter(uchastok__in=filtered_departments)
-        filtered_ozp_objects = Ozp.objects.filter(object_name__in=filtered_objects)
+        filtered_ozp_objects = Ozp.objects.filter(object_name__in=objects)
     # фильтрация по выполнению -----------------------------------------------------
         if vipolnenie == '1':
-            filtered_by_vipolnenie = 'Выполненным'
+            filtered_by.append('Выполненным')
             filtered_ozp_objects = filtered_ozp_objects.filter(is_done=True)
         elif vipolnenie == '0':
-            filtered_by_vipolnenie = 'Невыполненным'
+            filtered_by.append('Невыполненным')
             filtered_ozp_objects = filtered_ozp_objects.filter(is_done=False)
         else:
-            filtered_by_vipolnenie = ''
+            pass
     # -----------------------------------------------------------------------------
     # фильтрация по поданным на выполннеине ----------------------------------------
         if na_vipolnenie == '1':
-            filtered_by_na_vipolnenie = 'Поданным на устранение'
+            filtered_by.append('Поданным на устранение')
             filtered_podano = Podano_na_vipolnenie.objects.filter(podano=True)
             filtered_ozp_objects = filtered_ozp_objects.filter(podano_na_vipolnenie__in=filtered_podano)
         elif na_vipolnenie == '0':
-            filtered_by_na_vipolnenie = 'Не поданным на устранение'
+            filtered_by.append('Не поданным на устранение')
             filtered_podano = Podano_na_vipolnenie.objects.filter(podano=False)
             filtered_ozp_objects = filtered_ozp_objects.filter(podano_na_vipolnenie__in=filtered_podano)
         else:
-            filtered_by_na_vipolnenie = ''
+            pass
     # -------------------------------------------------------------------
     # фильтрация по году-------------------------------------------------
         if year_filter != year_list:
             filtered_ozp_objects = filtered_ozp_objects.filter(zakrytie_date__year__in=year_filter)
             filtered_by_year = 'По следующим годам ' + ' '.join(year_filter)
-        else:
-            filtered_by_year = ''
+            filtered_by.append(filtered_by_year)
     # -------------------------------------------------------------------
     # фильтрация по выполнению в течении месяца--------------------------
         if this_month == 'this_month':
             month = datetime.today() + timedelta(days=30)
             filtered_ozp_objects = filtered_ozp_objects.filter(zakrytie_date__lt=month)
-            filtered_by_month = 'По необходимости выполнения в течении месяца'
-        else:
-            filtered_by_month = ''
+            filtered_by.append('По необходимости выполнения в течении месяца')
     # -------------------------------------------------------------------
-        filtered_by = ' '.join([filtered_by_department, filtered_by_vipolnenie, filtered_by_na_vipolnenie,
-                                filtered_by_year, filtered_by_month])
-        if filtered_by != '    ':
-            pass
-        else:
-            filtered_by = ''
-        context = {'objectlist': filtered_ozp_objects, 'ceh': ceh_list, 'uchastok': uchastok_list, 'year': year_list,
-                   'filtered_by': filtered_by}
+        filtered_by_str = ' '.join(filtered_by)
+        context = {'objectlist': filtered_ozp_objects, 'year': year_list, 'filtered_by': filtered_by_str,
+                   'filter_form': filter_form}
         return render(request, "main/templates/ozp.html", context)
     else:
         filtered_ozp_objects = Ozp.objects.all()
         filtered_by = str('')
-        context = {'objectlist': filtered_ozp_objects, 'ceh': ceh_list, 'uchastok': uchastok_list, 'year': year_list,
+        context = {'objectlist': filtered_ozp_objects, 'filter_form': filter_form, 'year': year_list,
                    'filtered_by': filtered_by}
         return render(request, "main/templates/ozp.html", context)
 
 
 # функция получения отфильтрованных департаментов по цеху и участку-----------------------
+@login_required(login_url='account:login')
 def department_filter(ceh, uchastok):
     filtered_by = []
     if ceh == 'all' and uchastok == 'all':
@@ -567,61 +620,61 @@ def ozp_details(request, ozp_id):
 @login_required(login_url='account:login')
 @is_staff
 def ozp_zamechanie_change(request, ozp_id):
-    object = Ozp.objects.get(id=ozp_id)
+    obj = Ozp.objects.get(id=ozp_id)
     if request.method == 'POST':
         zamechanie = request.POST['text_zamechanya']
-        object.zamechanie_ozp = str(zamechanie)
-        object.save()
+        obj.zamechanie_ozp = str(zamechanie)
+        obj.save()
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
 @login_required(login_url='account:login')
 @is_staff
 def ozp_normative_change(request, ozp_id):
-    object = Ozp.objects.get(id=ozp_id)
+    obj = Ozp.objects.get(id=ozp_id)
     if request.method == 'POST':
         normative = request.POST['text_normative']
-        object.normative_documentation = str(normative)
-        object.save()
+        obj.normative_documentation = str(normative)
+        obj.save()
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
 @login_required(login_url='account:login')
 @is_staff
 def srok_ustranenia_change(request, ozp_id):
-    object = Ozp.objects.get(id=ozp_id)
+    obj = Ozp.objects.get(id=ozp_id)
     if request.method == 'POST':
         srok = request.POST['srok']
         if srok:
-            object.zakrytie_date = srok
-            object.save()
+            obj.zakrytie_date = srok
+            obj.save()
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
 @login_required(login_url='account:login')
 @is_staff
 def control_srok_change(request, ozp_id):
-    object = Ozp.objects.get(id=ozp_id)
+    obj = Ozp.objects.get(id=ozp_id)
     if request.method == 'POST':
         srok = request.POST['srok']
         if srok:
-            object.control_date = srok
-            object.save()
+            obj.control_date = srok
+            obj.save()
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
 @login_required(login_url='account:login')
 @is_staff
 def foto_zamechanie_add(request, ozp_id):
-    object = Ozp.objects.get(id=ozp_id)
+    obj = Ozp.objects.get(id=ozp_id)
     if request.method == 'POST':
         try:
             uploaded_file = request.FILES['foto']
-            x = Foto_zamechanya.objects.create(zamechanie=object, foto=uploaded_file)
+            x = Foto_zamechanya.objects.create(zamechanie=obj, foto=uploaded_file)
             x.save()
         except KeyError:
             pass
-        object.save()
+        obj.save()
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
@@ -649,39 +702,39 @@ def posle_foto_delete(request, f_id):
 
 @login_required(login_url='account:login')
 def foto_vipolnenie_add(request, ozp_id):
-    object = Ozp.objects.get(id=ozp_id)
+    obj = Ozp.objects.get(id=ozp_id)
     if request.method == 'POST':
         try:
             uploaded_file = request.FILES['foto']
-            x = Foto_vipolnenya.objects.create(zamechanie=object, foto=uploaded_file)
+            x = Foto_vipolnenya.objects.create(zamechanie=obj, foto=uploaded_file)
             x.save()
         except KeyError:
             pass
-        object.save()
+        obj.save()
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
 @login_required(login_url='account:login')
 @is_staff
 def accept(request, ozp_id):
-    object = Ozp.objects.get(id=ozp_id)
-    object.is_done = True
-    object.save()
+    obj = Ozp.objects.get(id=ozp_id)
+    obj.is_done = True
+    obj.save()
     return redirect('main:ozp_details', ozp_id=ozp_id)
 
 
 @login_required(login_url='account:login')
 def podano_na_vipolnenie(request, ozp_id):
-    object = Ozp.objects.get(id=ozp_id)
+    ozp_object = Ozp.objects.get(id=ozp_id)
     if request.method == 'POST':
         comment = request.POST['comment']
         user = request.user
         time = datetime.now()
         try:
-            obj = Podano_na_vipolnenie.objects.get(zamechanie=object)
+            obj = Podano_na_vipolnenie.objects.get(zamechanie=ozp_object)
             try:
                 uploaded_file = request.FILES['foto']
-                x = Foto_vipolnenya.objects.create(zamechanie=object, foto=uploaded_file)
+                x = Foto_vipolnenya.objects.create(zamechanie=ozp_object, foto=uploaded_file)
                 x.save()
             except KeyError:
                 pass
@@ -697,12 +750,12 @@ def podano_na_vipolnenie(request, ozp_id):
         except:
             try:
                 uploaded_file = request.FILES['foto']
-                x = Foto_vipolnenya.objects.create(zamechanie=object, foto=uploaded_file)
+                x = Foto_vipolnenya.objects.create(zamechanie=ozp_object, foto=uploaded_file)
                 x.save()
             except KeyError:
                 pass
             try:
-                y = Podano_na_vipolnenie.objects.create(comment=comment, otklonit_comment=None, zamechanie=object,
+                y = Podano_na_vipolnenie.objects.create(comment=comment, otklonit_comment=None, zamechanie=ozp_object,
                                                         podano=True, user=user, time_podano=time)
                 y.save()
             except KeyError:
@@ -807,11 +860,11 @@ def export_xls_ozp(request):
                         top=Side(border_style='thin', color='FF000000'),
                         bottom=Side(border_style='thin', color='FF000000'))
         alignment = Alignment(horizontal='center',
-                                vertical='center',
-                                text_rotation=0,
-                                wrap_text=True,
-                                shrink_to_fit=False,
-                                indent=0)
+                              vertical='center',
+                              text_rotation=0,
+                              wrap_text=True,
+                              shrink_to_fit=False,
+                              indent=0)
         for col_num in range(len(columns)):
             ws.cell(row_num, col_num + 1, columns[col_num])
             ws.cell(row_num, col_num + 1).font = font
@@ -837,7 +890,7 @@ def export_xls_ozp(request):
                     y = 'Да'
                 else:
                     y = 'Нет'
-            except :
+            except:
                 y = 'Нет'
             atr_list = [rows[row].object_name.object_name, rows[row].object_name.uchastok.ceh,
                         rows[row].object_name.uchastok.uchastok, rows[row].zamechanie_ozp,
@@ -861,3 +914,391 @@ def delete_ozp(request, ozp_id):
     except ObjectDoesNotExist:
         return redirect('main:ozp')
 
+
+@login_required(login_url='account:login')
+def load_objects(request):
+    context = {}
+    try:
+        ceh = request.GET.get('ceh')
+        if ceh == '':
+            objects = Object.objects.all()
+            context = {'objects': objects, 'ceh': 'все'}
+        else:
+            department = Department.objects.filter(ceh=ceh, is_prod=True)
+            objects = Object.objects.filter(uchastok__in=department)
+            context = {'objects': objects, 'ceh': ceh}
+    except (ValueError, TypeError):
+        pass
+    return render(request, 'main/templates/ajax_load_objects.html', context)
+
+
+@login_required(login_url='account:login')
+def load_uchastok(request):
+    context = {}
+    try:
+        ceh = request.GET.get('ceh')
+        if ceh == '':
+            uchastok = Department.objects.filter(is_prod=True).values_list('uchastok', flat=True)
+            context = {'uchastok': uchastok, 'ceh': 'все'}
+        else:
+            uchastok = Department.objects.filter(ceh=ceh, is_prod=True).values_list('uchastok', flat=True)
+            context = {'uchastok': uchastok, 'ceh': ceh}
+    except (ValueError, TypeError):
+        pass
+    return render(request, 'main/templates/ajax_load_uchastok.html', context)
+
+
+@login_required(login_url='account:login')
+def load_object_uchastok(request):
+    context = {}
+    try:
+        uchastok = request.GET.get('uchastok')
+        if uchastok == '':
+            objects = Object.objects.all()
+            context = {'objects': objects, 'uchastok': 'все'}
+        else:
+            department = Department.objects.filter(uchastok=uchastok, is_prod=True)
+            objects = Object.objects.filter(uchastok__in=department)
+            context = {'objects': objects, 'uchastok': uchastok}
+    except (ValueError, TypeError):
+        pass
+    return render(request, 'main/templates/ajax_load_objects_uchastok.html', context)
+
+
+@login_required(login_url='account:login')
+@is_staff
+def tu_create(request):
+    form = Tu_Create_Form(request.POST, request.FILES or None)
+    msg = ''
+    if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            return redirect('main:tu_list')
+        else:
+            msg = form_errors_text(form)
+    context = {'form': form, 'msg': msg}
+    return render(request, 'main/templates/tu_creation.html', context)
+
+
+@login_required(login_url='account:login')
+def tu_list(request):
+    filter_form = FilterForm()
+    object_list = Technicheskie_usloviya.objects.all()
+    if request.method == 'GET':
+        try:
+            data = FilterForm(request.GET or None)
+            objects, filtered_by = object_filter(data)
+            organization = request.GET.get('organization')
+            is_active = request.GET.get('is_active')
+            object_list = object_list.filter(object__in=objects)
+            if organization != 'all' and organization is not None:
+                object_list = object_list.filter(organization=organization)
+                filtered_by.append(organization)
+            if is_active == '1':
+                object_list = object_list.filter(expire_date__gt=datetime.now().date())
+                filtered_by.append('Действующим')
+            elif is_active == '0':
+                object_list = object_list.filter(expire_date__lt=datetime.now().date())
+                filtered_by.append('Недействительным')
+            filtered_by_str = ' '.join(filtered_by)
+            context = {'object_list': object_list, 'filtered_by': filtered_by_str, 'filter_form': filter_form}
+            return render(request, 'main/templates/tu_list.html', context)
+        except (ValueError, TypeError):
+            filtered_by = ''
+            context = {'object_list': object_list, 'filtered_by': filtered_by, 'filter_form': filter_form}
+            return render(request, 'main/templates/tu_list.html', context)
+
+
+@login_required(login_url='account:login')
+@is_staff
+def delete_tu(request, tu_id):
+    try:
+        obj = Technicheskie_usloviya.objects.get(id=tu_id)
+        obj.delete()
+        return redirect('main:tu_list')
+    except ObjectDoesNotExist:
+        return redirect('main:tu_list')
+
+
+@login_required(login_url='account:login')
+def tehdoc_list(request):
+    filter_form = FilterForm()
+    object_list = Technicheskaya_documentacia.objects.all()
+    if request.method == 'GET':
+        try:
+            data = FilterForm(request.GET or None)
+            objects, filtered_by = object_filter(data)
+            object_list = object_list.filter(object__in=objects)
+            filtered_by_str = ' '.join(filtered_by)
+            context = {'object_list': object_list, 'filtered_by': filtered_by_str, 'filter_form': filter_form}
+            return render(request, 'main/templates/tehdoc_list.html', context)
+        except (ValueError, TypeError):
+            filtered_by = ''
+            context = {'object_list': object_list, 'filtered_by': filtered_by, 'filter_form': filter_form}
+            return render(request, 'main/templates/tehdoc_list.html', context)
+
+
+@login_required(login_url='account:login')
+@is_staff
+def delete_tehdoc(request, tehdoc_id):
+    try:
+        obj = Technicheskaya_documentacia.objects.get(id=tehdoc_id)
+        obj.delete()
+        return redirect('main:tehdoc_list')
+    except ObjectDoesNotExist:
+        return redirect('main:tehdoc_list')
+
+
+@login_required(login_url='account:login')
+@is_staff
+def tehdoc_create(request):
+    form = Tehdoc_Create_Form(request.POST, request.FILES or None)
+    msg = ''
+    if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            return redirect('main:tehdoc_list')
+        else:
+            msg = form_errors_text(form)
+    context = {'form': form, 'msg': msg}
+    return render(request, 'main/templates/tehdoc_creation.html', context)
+
+
+@login_required(login_url='account:login')
+def scheme_list(request):
+    filter_form = FilterForm()
+    object_list = Scheme.objects.all()
+    if request.method == 'GET':
+        try:
+            data = FilterForm(request.GET or None)
+            objects, filtered_by = object_filter(data)
+            object_list = object_list.filter(object__in=objects)
+            filtered_by_str = ' '.join(filtered_by)
+            context = {'object_list': object_list, 'filtered_by': filtered_by_str, 'filter_form': filter_form}
+            return render(request, 'main/templates/scheme_list.html', context)
+        except (ValueError, TypeError):
+            filtered_by = ''
+            context = {'object_list': object_list, 'filtered_by': filtered_by, 'filter_form': filter_form}
+            return render(request, 'main/templates/scheme_list.html', context)
+
+
+@login_required(login_url='account:login')
+@is_staff
+def scheme_create(request):
+    form = Scheme_Create_Form(request.POST, request.FILES or None)
+    msg = ''
+    if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            return redirect('main:scheme_list')
+        else:
+            msg = form_errors_text(form)
+    context = {'form': form, 'msg': msg}
+    return render(request, 'main/templates/scheme_creation.html', context)
+
+
+@login_required(login_url='account:login')
+@is_staff
+def scheme_delete(request, scheme_id):
+    try:
+        obj = Scheme.objects.get(id=scheme_id)
+        obj.delete()
+        return redirect('main:scheme_list')
+    except ObjectDoesNotExist:
+        return redirect('main:scheme_list')
+
+
+@login_required(login_url='account:login')
+@is_staff
+def change_object_name(request, obj_id: int):
+    try:
+        obj = Object.objects.get(id=obj_id)
+        form = Object_Name_Form(request.POST)
+        if request.method == 'POST':
+            if form.is_valid():
+                name = form.cleaned_data['object_name']
+                obj.object_name = name
+                obj.save()
+                return redirect('main:object_detail', name=obj_id)
+            else:
+                msg = form_errors_text(form)
+                return redirect('main:object_detail', name=obj_id, msg=msg)
+    except ObjectDoesNotExist:
+        msg = 'Неизвестная ошибка'
+        return redirect('main:object_detail', name=obj_id, msg=msg)
+
+
+@login_required(login_url='account:login')
+@is_staff
+def change_object_uchastok(request, obj_id: int):
+    try:
+        obj = Object.objects.get(id=obj_id)
+        form = Object_Uchastok_Form(request.POST)
+        if request.method == 'POST':
+            if form.is_valid():
+                uchastok = form.cleaned_data['uchastok']
+                obj.uchastok = uchastok
+                obj.save()
+                return redirect('main:object_detail', name=obj_id)
+            else:
+                msg = form_errors_text(form)
+                return redirect('main:object_detail', name=obj_id, msg=msg)
+    except ObjectDoesNotExist:
+        msg = 'Неизвестная ошибка'
+        return redirect('main:object_detail', name=obj_id, msg=msg)
+
+
+@login_required(login_url='account:login')
+@is_staff
+def change_coordinats(request, obj_id: int):
+    try:
+        obj = Object.objects.get(id=obj_id)
+        form = Coordinat_Form(request.POST)
+        if request.method == 'POST':
+            if form.is_valid():
+                obj.position.latitude_degrees = form.cleaned_data['latitude_degrees']
+                obj.position.latitude_minutes = form.cleaned_data['latitude_minutes']
+                obj.position.latitude_seconds = form.cleaned_data['latitude_seconds']
+                obj.position.longitude_degrees = form.cleaned_data['longitude_degrees']
+                obj.position.longitude_minutes = form.cleaned_data['longitude_minutes']
+                obj.position.longitude_seconds = form.cleaned_data['longitude_seconds']
+                obj.position.save()
+                return redirect('main:object_detail', name=obj_id)
+            else:
+                msg = form_errors_text(form)
+                return redirect('main:object_detail', name=obj_id, msg=msg)
+    except ObjectDoesNotExist:
+        msg = 'Неизвестная ошибка'
+        return redirect('main:object_detail', name=obj_id, msg=msg)
+
+
+@login_required(login_url='account:login')
+@is_staff
+def change_address(request, obj_id: int):
+    try:
+        obj = Object.objects.get(id=obj_id)
+        form = Object_Address_Form(request.POST)
+        if request.method == 'POST':
+            if form.is_valid():
+                obj.position.address = form.cleaned_data['address']
+                obj.position.save()
+                return redirect('main:object_detail', name=obj_id)
+            else:
+                msg = form_errors_text(form)
+                return redirect('main:object_detail', name=obj_id, msg=msg)
+    except ObjectDoesNotExist:
+        msg = 'Неизвестная ошибка'
+        return redirect('main:object_detail', name=obj_id, msg=msg)
+
+
+@login_required(login_url='account:login')
+@is_staff
+def change_district(request, obj_id: int):
+    try:
+        obj = Object.objects.get(id=obj_id)
+        form = Object_District_Form(request.POST)
+        if request.method == 'POST':
+            if form.is_valid():
+                obj.position.district = form.cleaned_data['district']
+                obj.position.save()
+                return redirect('main:object_detail', name=obj_id)
+            else:
+                msg = form_errors_text(form)
+                return redirect('main:object_detail', name=obj_id, msg=msg)
+    except ObjectDoesNotExist:
+        msg = 'Неизвестная ошибка'
+        return redirect('main:object_detail', name=obj_id, msg=msg)
+
+
+@login_required(login_url='account:login')
+@is_staff
+def add_object_foto(request, obj_id: int):
+    try:
+        obj = Object.objects.get(id=obj_id)
+        form = Object_Foto_Form(request.POST, request.FILES)
+        if request.method == 'POST':
+            if form.is_valid():
+                year = form.cleaned_data['year']
+                foto = request.FILES['foto']
+                foto_object = Object_Foto.objects.create(year=year, foto=foto, object=obj)
+                foto_object.save()
+                return redirect('main:object_detail', name=obj_id)
+            else:
+                msg = form_errors_text(form)
+                return redirect('main:object_detail', name=obj_id, msg=msg)
+    except ObjectDoesNotExist:
+        msg = 'Неизвестная ошибка'
+        return redirect('main:object_detail', name=obj_id, msg=msg)
+
+
+@login_required(login_url='account:login')
+@is_staff
+def foto_object_delete(request, foto_id: int):
+    try:
+        foto_object = Object_Foto.objects.get(id=foto_id)
+        object_id = foto_object.object.id
+        foto_object.delete()
+        return redirect('main:object_detail', name=object_id)
+    except ObjectDoesNotExist:
+        msg = 'Неизвестная ошибка'
+        return redirect('main:objects', msg=msg)
+
+
+@login_required(login_url='account:login')
+@is_staff
+def delete_object(request, obj_id: int):
+    try:
+        obj = Object.objects.get(id=obj_id)
+        name = str(obj.object_name)
+        obj.delete()
+        return redirect('main:objects', msg=f'Объект {name} удален')
+    except ObjectDoesNotExist:
+        msg = 'Неизвестная ошибка'
+        return redirect('main:objects', msg=msg)
+
+
+@login_required(login_url='account:login')
+def object_foto_list(request, msg=''):
+    foto_list = Object_Foto.objects.all()
+    foto_form = List_Foto_Form()
+    filter_form = FilterForm()
+    if request.method == 'GET':
+        try:
+            data = FilterForm(request.GET or None)
+            objects, filtered_by = object_filter(data)
+            filtered_by_str = ' '.join(filtered_by)
+            foto_list = foto_list.filter(object__in=objects)
+            context = {'foto_list': foto_list, 'filtered_by': filtered_by_str, 'filter_form': filter_form, 'msg': msg,
+                       'foto_form': foto_form}
+            return render(request, 'main/templates/foto_object_list.html', context)
+        except (ValueError, TypeError):
+            filtered_by = ''
+            context = {'foto_list': foto_list, 'filtered_by': filtered_by, 'filter_form': filter_form, 'msg': msg,
+                       'foto_form': foto_form}
+            return render(request, 'main/templates/foto_object_list.html', context)
+
+
+@login_required(login_url='account:login')
+@is_staff
+def foto_add_list(request):
+    foto_form = List_Foto_Form(request.POST, request.FILES or None)
+    if request.method == 'POST':
+        if foto_form.is_valid():
+            foto_form.save()
+            return redirect('main:object_foto_list')
+        else:
+            msg = form_errors_text(foto_form)
+            return redirect('main:object_foto_list', msg=msg)
+
+
+@login_required(login_url='account:login')
+@is_staff
+def foto_list_delete(request, foto_id):
+    try:
+        obj = Object_Foto.objects.get(id=foto_id)
+        name = str(obj.object.object_name)
+        obj.delete()
+        return redirect('main:object_foto_list', msg=f'Фотография объекта {name} удалена')
+    except ObjectDoesNotExist:
+        msg = 'Неизвестная ошибка'
+        return redirect('main:object_foto_list', msg=msg)

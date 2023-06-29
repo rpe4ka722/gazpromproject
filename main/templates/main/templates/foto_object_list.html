@@ -1,0 +1,87 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Фотографии объектов{% endblock %}
+{% block content %}
+    <div class="button-bar">
+        <span>
+            <button onmousedown="showhide_changeform('foto')">
+                Добавить
+            </button>
+        </span>
+        <span>
+            <a href="{% url 'main:objects' %}">
+                <button type="submit" >Назад</button>
+            </a>
+        </span>
+        {{ msg }}
+        <div id="filter-button">
+            <span>
+                {% if filtered_by == '' %} Фильтрация отсутствует.
+                {% else %} Объекты отфильтрованы по: {{ filtered_by }}</span>
+                {% endif %}
+            <button type="submit" form="filter_reset" value="Сбросить" >Сбросить</button>
+            <input type="button" value="Фильтр" onmousedown="showhide('filter')" id="filter-button-dynamic">
+            <form id="filter_reset">
+                <a href={% url 'main:object_foto_list' %}>
+                </a>
+            </form>
+        </div>
+    </div>
+    <div id="filter">
+            <div class="filter-content">
+            <form id="filter_form" method="get" action="{% url 'main:object_foto_list' %}">
+                {{ filter_form.as_p }}
+            </form>
+            </div>
+            <div id="filter-button-bar">
+                <button type="submit" form="filter_form" value="Применить">Применить</button>
+            </div>
+    <!-----------------------------------------ajax------------------------------------------------------------>
+        <script src="/static/main/script/jquery.js"></script>
+        <script src="/static/main/script/filter.js"></script>
+    <!-----------------------------------------ajax------------------------------------------------------------>
+    </div>
+    <div class="content">
+        <!-------------------------------------------------------------------->
+        {% for i in foto_list %}
+        <div id="foto_delete_{{ i.id }}" class="change_form_ozp">
+            <form method="post" action="{% url 'main:foto_list_delete' i.id %}">
+                {% csrf_token %}
+                Вы действительно хотите удалить фотографию???
+                <br><br>
+                <input type="submit" value="Удалить">
+                <button onmousedown="showhide_changeform('foto_delete_{{ i.id }}')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+        <!-------------------------------------------------------------------->
+        <div id="foto" class="change_form_ozp">
+            <form method="post" action="{% url 'main:foto_add_list' %}" enctype="multipart/form-data">
+                Добавить фотографию объекта
+                {% csrf_token %}
+                {{ foto_form.as_p }}
+                <input type="submit" value="Добавить">
+                <button onmousedown="showhide_changeform('foto')" class="close_button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </form>
+        </div>
+        <!-------------------------------------------------------------------->
+        <div class="table">
+            {% for i in foto_list %}
+                <div class="foto_ams_list">
+                    <a href="{{ i.foto.url }}" target="_blank">
+                        <img src="{{ i.foto.url }}">
+                    </a>
+                    <button onmousedown="showhide_changeform('foto_delete_{{ i.id }}')" class="foto_button">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                    <div class="foto_text">
+                        {{ i.object }} {{ i.year.year }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

@@ -12,6 +12,7 @@
                 <button type="submit">Выгрузить</button>
             </a>
         </span>
+        {{ msg }}
         <div id="filter-button">
             <span>
                 {% if filtered_by == '' %} Фильтрация отсутствует.
@@ -25,49 +26,24 @@
             </form>
         </div>
     </div>
+    <!-----------------------------------------filter----------------------------------------------------------------->
     <div id="filter">
             <div class="filter-content">
-                <form id="filter_form" method="get" action={% url 'ams:ams' %}>
-                    <span>Фильтровать по цеху:</span>
+                <form id="filter_form" method="get" action="{% url 'ams:ams' %}">
+                    {% csrf_token %}
+                    {{ filter_form.as_p }}
+                    <span>Выбрать АМС высотой</span>
                     <p>
-                        <select name="ceh" form="filter_form">
-                            <option value="all">Все</option>
-                            {% for i in ceh %}
-                                <option value="{{ i }}">{{ i }}</option>
-                            {% endfor %}
-                        </select>
+                       от <input type="number" name="min_visota" min="0" max="300" value="0"> м до
+                        <input type="number" name="max_visota" min="0" max="300" value="300"> м
                     </p>
-                    <span>Фильтровать по участку:</span>
+                    <span>Выбрать АМС по отклонению</span>
                     <p>
-                        <select name="uchastok" form="filter_form">
-                            <option value="all">Все</option>
-                            {% for i in uchastok %}
-                               <option value="{{ i }}">{{ i }}</option>
-                            {% endfor %}
-                        </select>
-                    </p>
-                    <span>Фильтровать по объекту:</span>
-                    <p>
-                        <select name="object" form="filter_form">
-                            <option value="all" selected>Все</option>
-                            {% for i in objects %}
-                               <option value="{{ i }}">{{ i }}</option>
-                            {% endfor %}
-                        </select>
-                    </p>
-                    <span>Фильтровать по действующим:</span>
-                    <p>
-                        <select name="is_active" form="filter_form">
+                        <select name="otklonenie" form="filter_form">
                             <option value="all" selected>Показать все</option>
-                            <option value="1">Показать только действующие</option>
-                            <option value="0">Показать только недействительные</option>
-                        </select>
-                    </p>
-                    <span>Показать РИЧ со сроком окончания в текущем году:</span>
-                    <p>
-                        <select name="srok_this_year" form="filter_form">
-                            <option value="all">Показать все</option>
-                            <option value="1">Показать РИЧ со сроком действия менее года</option>
+                            <option value="1">Показать с отклонением</option>
+                            <option value="0">Показать без отклонения</option>
+                            <option value="2">Показать АМС для которых отсутствуют результаты измерений</option>
                         </select>
                     </p>
                 </form>
@@ -75,6 +51,10 @@
             <div id="filter-button-bar">
                 <button type="submit" form="filter_form" value="Применить">Применить</button>
             </div>
+    <!-----------------------------------------ajax------------------------------------------------------------>
+    <script src="/static/main/script/jquery.js"></script>
+    <script src="/static/main/script/filter.js"></script>
+    <!-----------------------------------------ajax------------------------------------------------------------>
     </div>
     <div class="content">
         <!-------------------------------------------------------------------->

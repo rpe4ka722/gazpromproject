@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from django.core.validators import MinValueValidator, MaxValueValidator, FileExtensionValidator
 from django.db import models
 from django.urls import reverse
@@ -33,7 +31,8 @@ class Ams(models.Model):
         (4, 4),
         (5, 5),
     ]
-    object_name = models.ForeignKey(Object, on_delete=models.CASCADE, verbose_name='Выберите объект')
+    object_name = models.OneToOneField(Object, on_delete=models.CASCADE, verbose_name='Выберите объект',
+                                    related_name='ams')
     height = models.IntegerField(verbose_name='Укажите высоту АМС, м', null=True, blank=True,
                                  validators=[MinValueValidator(0, message='Значение не может быть отрицательным'),
                                              MaxValueValidator(250, message='Значение не может быть больше 250')])
@@ -78,6 +77,10 @@ class Ams(models.Model):
             for item in protocol_list:
                 if last_protocol is None or last_protocol.year < item.year:
                     last_protocol = item
+                item.is_last = False
+                item.save()
+            last_protocol.is_last = True
+            last_protocol.save()
             return last_protocol
         else:
             return '-'
@@ -101,6 +104,7 @@ class Measurments(models.Model):
                                                                                                   'неверно.')],
                                     verbose_name='Загрузите протокол измерений')
     is_otklonenie = models.BooleanField(default=False)
+    is_last = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['year']

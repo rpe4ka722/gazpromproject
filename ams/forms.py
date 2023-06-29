@@ -1,5 +1,5 @@
 from django.forms import ModelForm, DateInput
-from django import forms
+
 
 from ams.models import Ams, Foto_Ams, Measurments, Diagnostic, Project, Sez, Inventory
 
@@ -82,4 +82,3 @@ class PassportForm(ModelForm):
     class Meta:
         model = Ams
         fields = ['passport']
-

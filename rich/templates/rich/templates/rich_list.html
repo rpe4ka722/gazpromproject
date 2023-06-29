@@ -28,33 +28,8 @@
     <div id="filter">
             <div class="filter-content">
                 <form id="filter_form" method="get" action={% url 'rich:rich_list' %}>
-                    <span>Фильтровать по цеху:</span>
-                    <p>
-                        <select name="ceh" form="filter_form">
-                            <option value="all">Все</option>
-                            {% for i in ceh %}
-                                <option value="{{ i }}">{{ i }}</option>
-                            {% endfor %}
-                        </select>
-                    </p>
-                    <span>Фильтровать по участку:</span>
-                    <p>
-                        <select name="uchastok" form="filter_form">
-                            <option value="all">Все</option>
-                            {% for i in uchastok %}
-                               <option value="{{ i }}">{{ i }}</option>
-                            {% endfor %}
-                        </select>
-                    </p>
-                    <span>Фильтровать по объекту:</span>
-                    <p>
-                        <select name="object" form="filter_form">
-                            <option value="all" selected>Все</option>
-                            {% for i in objects %}
-                               <option value="{{ i }}">{{ i }}</option>
-                            {% endfor %}
-                        </select>
-                    </p>
+                    {% csrf_token %}
+                    {{ filter_form.as_p }}
                     <span>Фильтровать по действующим:</span>
                     <p>
                         <select name="is_active" form="filter_form">
@@ -75,6 +50,10 @@
             <div id="filter-button-bar">
                 <button type="submit" form="filter_form" value="Применить">Применить</button>
             </div>
+    <!-----------------------------------------ajax------------------------------------------------------------>
+        <script src="/static/main/script/jquery.js"></script>
+        <script src="/static/main/script/filter.js"></script>
+    <!-----------------------------------------ajax------------------------------------------------------------>
     </div>
     <div class="content">
         <!-------------------------------------------------------------------->

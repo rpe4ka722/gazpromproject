@@ -1,0 +1,30 @@
+{% extends "main/templates/layout.html" %}
+{% block title %}Загрузка схем{% endblock %}
+{% block content %}
+    <div class="creation_form">
+        <div>
+            <h2>Для загрузки хемы заполните представленную форму:</h2>
+        </div>
+        <div>
+            <form action="{% url 'main:scheme_create' %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div>
+                    {% for field in form %}
+                        <div class="form-group">
+                            {{ field.label_tag }}
+                            <div>{{ field }}</div>
+                            {% if field.errors%}
+                                {% for error in field.errors %}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="account-button">
+                    <input type="submit" value="Создать">
+                </div>
+            </form>
+            <p>{{ msg }}</p>
+        </div>
+    </div>
+{% endblock %}
