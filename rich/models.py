@@ -48,30 +48,28 @@ class Type(models.Model):
 
     def frequency_range(self):
         # frequency_range функция поучения строки диапазона
-        max_div = 0
-        max_units = ''
-        min_div = 0
-        min_units = ''
+        div = 1
+        units = 'Гц'
         if 1000000 > self.frequency_range_max >= 1000:
-            max_div = 1000
-            max_units = 'кГц'
+            div = 1000
+            units = 'кГц'
         elif 1000000000 > self.frequency_range_max >= 1000000:
-            max_div = 1000000
-            max_units = 'МГц'
+            div = 1000000
+            units = 'МГц'
         elif self.frequency_range_max >= 1000000000:
-            max_div = 1000000000
-            max_units = 'ГГц'
+            div = 1000000000
+            units = 'ГГц'
         if 1000000 > self.frequency_range_min >= 1000:
-            min_div = 1000
-            min_units = 'кГц'
+            div = 1000
+            units = 'кГц'
         elif 1000000000 > self.frequency_range_min >= 1000000:
-            min_div = 1000000
-            min_units = 'МГц'
+            div = 1000000
+            units = 'МГц'
         elif self.frequency_range_min >= 1000000000:
-            min_div = 1000000000
-            min_units = 'ГГц'
-        frequency_string = str(int(self.frequency_range_max/max_div)) + ' ' + max_units + ' - ' + \
-                           str(int(self.frequency_range_min/min_div)) + ' ' + min_units
+            div = 1000000000
+            units = 'ГГц'
+        frequency_string = str(int(self.frequency_range_max/div)) + ' ' + units + ' - ' + \
+                           str(int(self.frequency_range_min/div)) + ' ' + units
         self.frequency_str = frequency_string
         self.save()
         return frequency_string
