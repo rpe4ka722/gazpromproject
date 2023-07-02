@@ -76,7 +76,7 @@ class Type(models.Model):
 
 
 class Rich(models.Model):
-    name = models.CharField(max_length=30, verbose_name='Наименование', unique=True)
+    name = models.CharField(max_length=50, verbose_name='Наименование', unique=True)
     start_date = models.DateField(auto_now=False, auto_now_add=False, verbose_name='Дата начала действия РИЧ')
     end_date = models.DateField(auto_now=False, auto_now_add=False, verbose_name='Дата окончания действия РИЧ')
     doc = models.FileField(upload_to='files/', validators=[FileExtensionValidator(allowed_extensions=['png', 'jpeg',
