@@ -122,7 +122,7 @@ class Rich(models.Model):
 
 
 class Registration(models.Model):
-    name = models.CharField(max_length=30, verbose_name='Наименование', unique=True, null=True, blank=True)
+    name = models.CharField(max_length=50, verbose_name='Наименование', unique=True, null=True, blank=True)
     start_date = models.DateField(auto_now=False, auto_now_add=False, verbose_name='Укажите дату начала действия')
     end_date = models.DateField(auto_now=False, auto_now_add=False, verbose_name='Укажите дату окончания срока '
                                                                                  'действия')
