@@ -1,5 +1,4 @@
 # gazpromproject
-dependencies
 asgiref==3.6.0
 Django==4.1.7
 et-xmlfile==1.1.0
